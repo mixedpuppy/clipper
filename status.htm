@@ -1,0 +1,108 @@
+<html>
+<head>
+  <title>DemoSocialService</title>
+  <link id="siteicon" rel="icon" href="./firefox.png"/>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="js/jquery.mustache.js" type="application/javascript"></script>
+
+  <script>
+  function onLoad() {
+    $("#shared").text(location.search);
+    socialMarkUpdate(true);
+  }
+  function socialMarkUpdate(isMarked) {
+    try {
+    var evt = document.createEvent("CustomEvent");
+    evt.initCustomEvent("socialMarkUpdate", true, true, JSON.stringify({marked: isMarked}));
+    document.documentElement.dispatchEvent(evt);
+    } catch(e) {
+        dump("****** unable to send socialMarkUpdate "+e+"\n");
+    }
+  }
+  var shareData;
+  addEventListener("OpenGraphData", function(e) {
+    dump("******** got OpenGraphData event! "+e.detail+"\n");
+    shareData = JSON.parse(e.detail);
+    $("#shared").text(shareData.url);
+    $("#data").text(e.detail);
+    $("#site-detail").empty();
+    $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
+    $("#product-detail").empty();
+    var data = {
+      name: shareData.title,
+      image: shareData.previews[0]
+    };
+    if (shareData.microdata && shareData.microdata.items.length) {
+      if (shareData.microdata.items[0].types.indexOf("http://schema.org/Product") >= 0) {
+        var item = shareData.microdata.items[0];
+        data = {
+          name: item.properties.name,
+          image: item.properties.image,
+        }
+        if (item.properties.offers.length) {
+          data.price = item.properties.offers[0].properties.price;
+        }
+      }
+    }
+    $("#product-detail").html($("#product-detail-tmpl").mustache(data));
+  });
+  
+  function saveMark() {
+    // store into localstorage, and set the mark
+    var items = localStorage["cart"];
+    if (items) {
+      items = JSON.parse(items);
+    } else {
+      items = [];
+    }
+    items.push(shareData);
+    localStorage["cart"] = JSON.stringify(items);
+    socialMarkUpdate(true);
+  }
+  
+  function showData() {
+    var e = document.getElementById("debug-data");
+    if (e.style.display == "none") {
+      e.style.display = "block";
+    } else {
+      e.style.display = "none";
+    }
+  }
+  </script>
+
+
+</head>
+<body contentid="content">
+  <div id="content" style="margin: 10px">
+
+  <div id="site-detail"></div>
+  <div id="product-detail" class="clearfix"></div>
+  <button onclick="saveMark();">Save</button>
+  <button onclick="socialMarkUpdate(false);">Unmark</button>
+  <button href="/" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</button>
+  <button onclick="showData();">Show Data</button>
+
+  <div id="debug-data" style="display: none;" class="clearfix">
+    <div>Page Marked: <div id="shared" class="textbox"></div></div>
+    <div>Data: <div id="data" class="textbox"></div></div>
+  </div>
+    
+<script id="site-detail-tmpl" type="text/x-jquery-tmpl">
+  <div>
+    <p><a href="{{url}}" target="_blank">{{siteName}}</a></p>
+  </div>
+</script>
+
+<script id="product-detail-tmpl" type="text/x-jquery-tmpl">
+  <div>
+    <img src="{{image}}" style="max-width: 150px; margin: 20px; float: right;"/>
+    <h3>{{name}}</h3>
+    {{#price}}
+    <p>price: {{.}}</p>
+    {{/price}}
+  </div>
+</script>
+</body>
+</html>

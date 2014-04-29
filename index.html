@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>clipper</title>
+
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/ga.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/style.css" media="screen" rel="stylesheet" type="text/css" />
+
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script type="text/javascript" src="js/jquery.stalactite.min.js"></script> 
+  <script src="js/jquery.mustache.js" type="application/javascript"></script>
+  <script src="./manifest.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+    //<![CDATA[
+
+      function reflow() {
+        function updateLoader(callback) {
+          setTimeout(function() {
+            $('.stalactite-loader')
+              .css({
+                position: 'fixed',
+                background: '#fff',
+                padding: '20px 20px 15px 20px',
+                top: 0,
+                left: 0
+              });
+              if (callback) {
+                callback.call(this);
+              }
+          }, 1);
+        }
+
+        $('#css-example-a').click(function(e) {
+          e.preventDefault();
+          $(this).parent().addClass('active');
+          $('#css-example').stalactite({
+            fluid: false,
+            cssPrep: false
+          });
+          updateLoader(function() {
+            $('#css-example').fadeIn();
+          });
+        });
+
+        $('#fluid-example-a').click(function(e) {
+          e.preventDefault();
+          $(this).parent().addClass('active');
+          $('#fluid-example').stalactite();
+          updateLoader(function() {
+            $('#fluid-example').fadeIn();
+          });
+        });
+        
+        var cart = $('#cart-stream');
+        // get data from localstorage and fill in our river
+        var items = localStorage["cart"];
+        if (items) {
+          items = JSON.parse(items);
+        } else {
+          items = {};
+        }
+        $("#intro2").css("display", "none");
+        if (items.length) {
+          $("#intro").css("display", "none");
+          $("#buttons").css("display", "block");
+          cart.empty();
+        } else {
+          $("#intro").css("display", "block");
+          $("#buttons").css("display", "none");
+        }
+        for (var i in items) {
+          var entry = items[i];
+          //dump(JSON.stringify(entry)+"\n");
+          var h = $("#product-detail-tmpl").mustache({
+            url: entry.url,
+            title: entry.title,
+            image: entry.previews[0]
+          });
+          cart.prepend(h);
+        }
+        //$("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
+
+        cart.stalactite({
+          fluid: false
+        });
+        updateLoader(function() {
+          cart.fadeIn();
+        });
+      };
+
+  function showButtons(e) {
+    if (e.style.display == "none") {
+      e.style.display = "block";
+    } else {
+      e.style.display = "none";
+    }
+  }
+  
+  function clearStorage() {
+    localStorage["cart"] = "";
+    reflow();
+  }
+
+    //]]>
+  </script>
+
+
+<script>
+  var loc = location.href;
+  var baseurl = loc.substring(0,loc.lastIndexOf('/'));
+  
+  function activate(node) {
+    var manifest = getManifest();
+  
+    var event = new CustomEvent("ActivateSocialFeature");
+    node.setAttribute("data-service", JSON.stringify(manifest));
+    node.dispatchEvent(event);
+    $("#intro2").css("display", "block");
+  }
+</script>
+
+</head>
+<body onload="reflow();">
+
+  <div class="container_9 section">
+    <div id="buttons" style="float: right; display: none">
+      <button class="btn btn-sm" onclick="reflow()" title="empty all clips">Refresh</button>
+      <button class="btn btn-sm" onclick="clearStorage(this)" title="empty all clips">Empty</button>
+      <button class="btn btn-sm" style="float: right;" onclick="activate(this)" title="activate clipper">Activate >></button>
+    </div>
+    <h1>clipper</h1>
+  </div>
+  <div id="intro" class="container_9 content">
+    <div>
+      <span style="width:240px; float: right;">
+        <center>
+          <a id="download" onclick="activate(this)" href="#"><img src="download.png" width="90" height="90" alt="Download" /></a>
+          <br />
+          <span class="mute">Activate Now!</span>
+        </center>
+      </span>
+      <h2 class="slogan grid6">
+        A simple rich element clipper service.  This service runs entirely in your web browser, no data is stored on the server.  Just activate the service, then as you browse the web, you an save clips to this page using the clip button found in the toolbar.
+      </h2>
+    </div>
+  </div>
+  <div id="intro2" class="container_9 content" style="display: none">
+      <h2 class="slogan grid6">
+        Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
+      </h2>
+  </div>
+  <div id="cart-stream" class="content container_9 active">
+    <img src="http://s3.amazonaws.com/resized-images-new/40E473CE-9C84-4D7A-A1A5-31B2D8A2A35C" />
+    <img src="http://s3.amazonaws.com/resized-images-new/B60650DF-65F1-4D13-9286-408387FD137B" />
+    <img src="http://s3.amazonaws.com/resized-images-new/9DDEC32A-1823-4F6B-B8AC-956C7443C9E8" />
+    <img src="http://s3.amazonaws.com/resized-images-new/1262D972-148C-41E8-AD2A-AB4C1AD2D222" />
+    <img src="http://s3.amazonaws.com/resized-images-new/78A88D94-1004-4138-8824-2BF7F1C39A6D" />
+    <img src="http://s3.amazonaws.com/resized-images-new/E8DF490E-9546-482B-9B0B-4F831E6058A5" />
+    <h2 class="slogan grid4">
+      It sorts all types of content and is especially diligent about <code>images</code>, <code>videos</code>, and <code>iframes</code> making sure to load all media before assessing proper widths and heights.
+    </h2>
+    <!--<iframe src="http://player.vimeo.com/video/7133029?title=0&amp;byline=0&amp;portrait=0&amp;color=985a89" width="470" height="294" frameborder="0" webkitAllowFullScreen allowFullScreen></iframe>-->
+    <img src="http://s3.amazonaws.com/resized-images-new/C8C44FD6-C258-41B4-B2EA-F2E6057F210B" />
+    <img src="http://s3.amazonaws.com/resized-images-new/14E944F1-8255-4B8F-B6BA-79B57096855F" />
+    <img src="http://s3.amazonaws.com/resized-images-new/2B826972-5723-4EAC-B1CC-11E789B1B89B" />
+    <img src="http://s3.amazonaws.com/resized-images-new/BAD77894-3B95-4120-B4A6-E3D777DFDD90" />
+    <img src="http://s3.amazonaws.com/resized-images-new/31A6302B-EAAE-4593-8C2A-83EF0EE194D5" />
+    <img src="http://s3.amazonaws.com/resized-images-new/589361ED-4309-4ADD-9B97-833431B279F0" />
+    <img src="http://s3.amazonaws.com/resized-images-new/E01073EC-8CDD-4A01-B872-4E46D7F42831" />
+    <h2 style="width:600px;">
+      It does this by setting all children of an element to <code>display: inline-block;</code> As a result this plugin requires a modern browser and plays well with Ben Barnett's <a href="http://playground.benbarnett.net/jquery-animate-enhanced/">Animate Enhanced</a>. Scroll to the bottom to see usage.
+    </h2>
+    <img src="http://s3.amazonaws.com/resized-images-new/B7D4B10B-8425-4405-A7AE-446357B90E07" />
+    <img src="http://s3.amazonaws.com/resized-images-new/92E053FE-133A-43DB-9FBA-D4C95F2FC33A" />
+    <img src="http://s3.amazonaws.com/resized-images-new/BF12BE28-2A48-43BE-A5B9-AE54F08D11F8" />
+    <img src="http://s3.amazonaws.com/resized-images-new/F7606CF0-C758-4054-A691-9240192EFB6A" />
+    <img src="http://s3.amazonaws.com/resized-images-new/5CD7C91C-CB3D-43BB-83B2-1B79422AF771" />
+    <img src="http://s3.amazonaws.com/resized-images-new/9541AEC1-C0C0-4B76-A535-41E1290C1A6C" />
+    <img src="http://s3.amazonaws.com/resized-images-new/170C9FEB-7376-412B-BCD3-017485160F0F" />
+    <img src="http://s3.amazonaws.com/resized-images-new/3C74773F-4AFA-4893-967B-7362102798E1" />
+    <img src="http://s3.amazonaws.com/resized-images-new/017C75E8-F1E4-4301-93A2-4DE09F26B4CF" />
+  </div>
+
+<script id="product-detail-tmpl" type="text/x-jquery-tmpl">
+  <div class="product-entry">
+    <p class="top">{{title}}</p>
+    <a href="{{url}}" target="_blank"><img src="{{image}}"/></a>
+    <p class="bottom"><button>remove</button></p>
+  </div>
+</script>
+</body>
+</html>
