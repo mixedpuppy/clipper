@@ -4,12 +4,12 @@ var baseurl = loc.substring(0,loc.lastIndexOf('/'));
 function getManifest() {
   return {
     // currently required
-    "name": "Social Toolbar Button and Panel Example",
+    "name": "Clipper",
     "origin": baseurl,
     // icons from http://findicons.com/icon/158311/firefox?id=356182 by ipapun
-    "iconURL": baseurl+"/firefox16.png",
-    "icon32URL": baseurl+"/firefox32.png",
-    "icon64URL": baseurl+"/firefox64.png",
+    "iconURL": baseurl+"/clipper.png",
+    "icon32URL": baseurl+"/clipper.png",
+    "icon64URL": baseurl+"/clipper.png",
   
     // at least one of these must be defined
     "markURL": baseurl+"/status.htm",
@@ -17,7 +17,7 @@ function getManifest() {
     "unmarkedIcon": baseurl+"/unchecked32.png",
   
     // should be available for display purposes
-    "description": "A simple example of a social toolbarbutton with a panel",
+    "description": "Clip rich data from the web and save it in your browser",
     "author": "Shane Caraveo, Mozilla",
     "homepageURL": "https://github.com/mixedpuppy/socialapi-toolbarbutton/",
   
