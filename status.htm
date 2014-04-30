@@ -34,15 +34,34 @@
       image: shareData.previews[0]
     };
     if (shareData.microdata && shareData.microdata.items.length) {
-      if (shareData.microdata.items[0].types.indexOf("http://schema.org/Product") >= 0) {
-        var item = shareData.microdata.items[0];
-        data = {
-          name: item.properties.name,
-          image: item.properties.image,
+      for (var i in shareData.microdata.items) {
+      dump("\ngot microdata "+i+"\n");
+          var item = shareData.microdata.items[i];
+        if (item.types.indexOf("http://schema.org/Product") >= 0) {
+          dump("\ndata: "+JSON.stringify(item)+"\n");
+          if (item.properties.name) {
+            data.name = item.properties.name;
+          }
+          if (item.properties.image) {
+            data.image = item.properties.image;
+          }
+          if (item.properties.offers.length) {
+            data.price = item.properties.offers[0].properties.price;
+          }
+        } else
+        if (item.types.indexOf("http://data-vocabulary.org/Product") >= 0) {
+          dump("\ndata: "+JSON.stringify(item)+"\n");
+          if (item.properties.name) {
+            data.name = item.properties.name;
+          }
+          if (item.properties.image) {
+            data.image = item.properties.image;
+          }
+          if (item.properties.offerDetails.length) {
+            data.price = item.properties.offerDetails[0].properties.price;
+          }
         }
-        if (item.properties.offers.length) {
-          data.price = item.properties.offers[0].properties.price;
-        }
+
       }
     }
     $("#product-detail").html($("#product-detail-tmpl").mustache(data));
