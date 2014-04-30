@@ -19,7 +19,7 @@ function getManifest() {
     // should be available for display purposes
     "description": "Clip rich data from the web and save it in your browser",
     "author": "Shane Caraveo, Mozilla",
-    "homepageURL": "https://github.com/mixedpuppy/socialapi-toolbarbutton/",
+    "homepageURL": "https://github.com/mixedpuppy/clipper/",
   
     // optional
     "version": 1
