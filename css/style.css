@@ -157,9 +157,13 @@ a:hover * {
   border: none;
 }
 
+.product-entry .close {
+  color: white;
+  font-size: 18px;
+}
 .product-entry img {
-  max-width: 250px;
-  max-height: 350px;
+  max-width: 300px;
+  max-height: 5000px;
 }
 
 .product-entry > .top {
@@ -178,6 +182,8 @@ a:hover * {
   width: 100%;
   display: none;
   margin: 0;
+  font-size: 18px;
+  line-height: 22px;
 }
 
 .product-entry:hover {

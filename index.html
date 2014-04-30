@@ -16,6 +16,16 @@
   <script type="text/javascript">
     //<![CDATA[
 
+    function getItems() {
+      var items = localStorage["cart"];
+      if (items) {
+        items = JSON.parse(items);
+      } else {
+        items = [];
+      }
+      return items;
+    }
+
       function reflow() {
         function updateLoader(callback) {
           setTimeout(function() {
@@ -56,12 +66,7 @@
         
         var cart = $('#cart-stream');
         // get data from localstorage and fill in our river
-        var items = localStorage["cart"];
-        if (items) {
-          items = JSON.parse(items);
-        } else {
-          items = {};
-        }
+        var items = getItems();
         $("#intro2").css("display", "none");
         if (items.length) {
           $("#intro").css("display", "none");
@@ -90,37 +95,50 @@
           cart.fadeIn();
         });
       };
-
-  function showButtons(e) {
-    if (e.style.display == "none") {
-      e.style.display = "block";
-    } else {
-      e.style.display = "none";
-    }
-  }
   
-  function clearStorage() {
-    localStorage["cart"] = "";
-    reflow();
-  }
+    function showButtons(e) {
+      if (e.style.display == "none") {
+        e.style.display = "block";
+      } else {
+        e.style.display = "none";
+      }
+    }
+    
+    function clearStorage() {
+      localStorage["cart"] = "";
+      reflow();
+    }
+    
+    function clearEntry(url) {
+      var items = getItems();
+      for (var i in items) {
+        var entry = items[i];
+        if (entry.url == url) {
+          items.splice(i, 1);
+          localStorage["cart"] = JSON.stringify(items);
+          reflow();
+          return;
+        }
+      }    
+    }
 
     //]]>
   </script>
 
-
-<script>
-  var loc = location.href;
-  var baseurl = loc.substring(0,loc.lastIndexOf('/'));
   
-  function activate(node) {
-    var manifest = getManifest();
-  
-    var event = new CustomEvent("ActivateSocialFeature");
-    node.setAttribute("data-service", JSON.stringify(manifest));
-    node.dispatchEvent(event);
-    $("#intro2").css("display", "block");
-  }
-</script>
+  <script>
+    var loc = location.href;
+    var baseurl = loc.substring(0,loc.lastIndexOf('/'));
+    
+    function activate(node) {
+      var manifest = getManifest();
+    
+      var event = new CustomEvent("ActivateSocialFeature");
+      node.setAttribute("data-service", JSON.stringify(manifest));
+      node.dispatchEvent(event);
+      $("#intro2").css("display", "block");
+    }
+  </script>
 
 </head>
 <body onload="reflow();">
@@ -143,14 +161,18 @@
         </center>
       </span>
       <h2 class="slogan grid6">
-        A simple rich element clipper service.  This service runs entirely in your web browser, no data is stored on the server.  Just activate the service, then as you browse the web, you an save clips to this page using the clip button found in the toolbar.
+        A simple rich element clipper service.  This service runs entirely in
+        your web browser, no data is stored on the server, it's kept private
+        and secure on your system.  Just activate the service, then as you
+        browse the web, you can save clips to this page using the clip button
+        found in the toolbar.
       </h2>
     </div>
   </div>
   <div id="intro2" class="container_9 content" style="display: none">
-      <h2 class="slogan grid6">
-        Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
-      </h2>
+    <h2 class="slogan grid6">
+      Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
+    </h2>
   </div>
   <div id="cart-stream" class="content container_9 active">
     <img src="http://s3.amazonaws.com/resized-images-new/40E473CE-9C84-4D7A-A1A5-31B2D8A2A35C" />
@@ -186,9 +208,9 @@
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   <div class="product-entry">
-    <p class="top">{{title}}</p>
+    <p class="top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right">x</button>{{title}}</p>
     <a href="{{url}}" target="_blank"><img src="{{image}}"/></a>
-    <p class="bottom"><button>remove</button></p>
+    <p class="bottom"></p>
   </div>
 </script>
 </body>
