@@ -45,7 +45,7 @@
           if (item.properties.image) {
             data.image = item.properties.image;
           }
-          if (item.properties.offers.length) {
+          if (item.properties.offers && item.properties.offers.length) {
             data.price = item.properties.offers[0].properties.price;
           }
         } else
@@ -57,7 +57,7 @@
           if (item.properties.image) {
             data.image = item.properties.image;
           }
-          if (item.properties.offerDetails.length) {
+          if (item.properties.offerDetails && item.properties.offerDetails.length) {
             data.price = item.properties.offerDetails[0].properties.price;
           }
         }
