@@ -2,15 +2,13 @@
 <head>
   <title>DemoSocialService</title>
   <link href="css/bootstrap.min.css" rel="stylesheet">
-
+  <link href="css/carousel.css" rel="stylesheet">
   <script src="js/jquery-1.11.1.min.js" type="application/javascript"></script>
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
+  <script src="js/jquery.cycle2.min.js" type="application/javascript"></script>
+  <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
 
   <script>
-  function onLoad() {
-    $("#shared").text(location.search);
-    socialMarkUpdate(true);
-  }
   function socialMarkUpdate(isMarked) {
     try {
     var evt = document.createEvent("CustomEvent");
@@ -21,50 +19,80 @@
     }
   }
   var shareData;
-  addEventListener("OpenGraphData", function(e) {
-    dump("******** got OpenGraphData event! "+e.detail+"\n");
-    shareData = JSON.parse(e.detail);
+  function setData(data) {
+    //dump("******** got OpenGraphData event! "+data+"\n");
+    shareData = JSON.parse(data);
     $("#shared").text(shareData.url);
-    $("#data").text(e.detail);
+    $("#data").text(data);
     $("#site-detail").empty();
     $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
-    $("#product-detail").empty();
-    var data = {
-      name: shareData.title,
-      image: shareData.previews[0]
-    };
+    var previews = {};
+
     if (shareData.microdata && shareData.microdata.items.length) {
       for (var i in shareData.microdata.items) {
-      dump("\ngot microdata "+i+"\n");
-          var item = shareData.microdata.items[i];
+        var item = shareData.microdata.items[i];
+        var properties = item.properties;
+        if (!properties.url)
+          properties.url = shareData.url;
+        var d = {
+          data: JSON.stringify(item)
+        };
         if (item.types.indexOf("http://schema.org/Product") >= 0) {
-          dump("\ndata: "+JSON.stringify(item)+"\n");
-          if (item.properties.name) {
-            data.name = item.properties.name;
+          if (properties.name) {
+            d.name = properties.name;
           }
-          if (item.properties.image) {
-            data.image = item.properties.image;
+          if (properties.image) {
+            d.image = properties.image;
           }
-          if (item.properties.offers && item.properties.offers.length) {
-            data.price = item.properties.offers[0].properties.price;
+          if (properties.offers && properties.offers.length) {
+            d.price = properties.offers[0].properties.price;
           }
         } else
-        if (item.types.indexOf("http://data-vocabulary.org/Product") >= 0) {
-          dump("\ndata: "+JSON.stringify(item)+"\n");
-          if (item.properties.name) {
-            data.name = item.properties.name;
+        if (types.indexOf("http://data-vocabulary.org/Product") >= 0) {
+          if (properties.name) {
+            d.name = properties.name;
           }
-          if (item.properties.image) {
-            data.image = item.properties.image;
+          if (properties.image) {
+            d.image = properties.image;
           }
-          if (item.properties.offerDetails && item.properties.offerDetails.length) {
-            data.price = item.properties.offerDetails[0].properties.price;
+          if (properties.offerDetails && properties.offerDetails.length) {
+            d.price = properties.offerDetails[0].properties.price;
           }
         }
-
+        previews[d.image] = d;
+        //$("#carousel-chooser").append($("#product-detail-tmpl").mustache(d));
       }
     }
-    $("#product-detail").html($("#product-detail-tmpl").mustache(data));
+    
+    if (shareData.previews) {
+      for (var i in shareData.previews) {
+        if (!shareData.previews[i])
+          continue;
+        var d = {
+          name: shareData.title,
+          url: shareData.url,
+          image: shareData.previews[i]
+        };
+        previews[d.image] = d;
+        //$("#carousel-chooser").append($("#page-detail-tmpl").mustache(d));
+      }
+    }
+    if (shareData["og:image"]) {
+      var d = {
+        name: shareData.title,
+        url: shareData.url,
+        image: shareData["og:image"]
+      };
+      previews[d.image] = d;
+      //$("#carousel-chooser").append($("#page-detail-tmpl").mustache(d));
+    }
+
+    var previewData = [previews[d] for (d in previews)];
+    $("#carousel-chooser").append($("#product-detail-tmpl").mustache({list: previewData}));
+    $('#carousel-chooser').cycle();
+  }
+  addEventListener("OpenGraphData", function(e) {
+    setData(e.detail);
   });
   
   function saveMark() {
@@ -80,47 +108,84 @@
     socialMarkUpdate(true);
   }
   
-  function showData() {
-    var e = document.getElementById("debug-data");
+  function toggleHidden(e) {
     if (e.style.display == "none") {
       e.style.display = "block";
     } else {
       e.style.display = "none";
     }
   }
+  function showData() {
+    toggleHidden(document.getElementById("product-detail"));
+    toggleHidden(document.getElementById("debug-data"));
+  }
   </script>
 
 
 </head>
 <body contentid="content">
-  <div id="content" style="margin: 10px">
+  <div id="content" style="margin: 0px; padding: 10px; min-height: 300px;">
 
+  <div id="product-detail" class="clearfix">
   <div id="site-detail"></div>
-  <div id="product-detail" class="clearfix"></div>
-  <button onclick="saveMark();">Save</button>
-  <button onclick="socialMarkUpdate(false);">Unmark</button>
-  <button href="./" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</button>
-  <button onclick="showData();">Show Data</button>
-
-  <div id="debug-data" style="display: none;" class="clearfix">
-    <div>Page Marked: <div id="shared" class="textbox"></div></div>
-    <div>Data: <div id="data" class="textbox"></div></div>
+  <div id="carousel-promotions" class="carousel">
+    <div class="carousel-wrapper">
+      <div id="carousel-chooser" class="carousel-inner"
+        data-cycle-center-horz="true"
+        data-cycle-center-vert="true"
+        data-cycle-auto-height="calc"
+        data-cycle-pager=".cycle-pager"
+        data-cycle-prev=".cycle-prev"
+        data-cycle-next=".cycle-next"
+        data-cycle-fx="scrollHorz"
+        data-cycle-paused="true"
+        data-cycle-slides="&gt; div">
+      </div>
+      <div class="clearfix">
+        <span class="cycle-prev center">&lsaquo;</span>
+        <div class="cycle-pager center"></div>
+        <span class="cycle-next center">&rsaquo;</span>
+      </div>
+    </div>
   </div>
     
+  </div>
+
+  <div id="buttons">
+  <span type="button" class="btn btn-default" onclick="saveMark();">Save</span>
+  <span type="button" class="btn btn-default" href="./" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</span>
+  <span type="button" class="btn btn-default" onclick="showData();">Show Data</span>
+  </div>
+<div id="debug-data" style="display: none;" class="clearfix">
+  <div>Page Marked: <div id="shared" class="textbox"></div></div>
+  <div>Data: <div id="data" class="textbox"></div></div>
+</div>
+
 <script id="site-detail-tmpl" type="text/x-jquery-tmpl">
   <div>
-    <p><a href="{{url}}" target="_blank">{{siteName}}</a></p>
+    <p><a href="{{url}}" target="_blank" alt="{{url}}">{{siteName}}</a> {{title}}</p>
+  </div>
+</script>
+
+<script id="page-detail-tmpl" type="text/x-jquery-tmpl">
+  <div class="item preview" data-data='{{data}}' style='background-image: url("{{image}}");'>
+    <div class="details">
+    <p class="lead">{{name}}</p>
+    </div>
   </div>
 </script>
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
-  <div>
-    <img src="{{image}}" style="max-width: 150px; margin: 20px; float: right;"/>
-    <h3>{{name}}</h3>
-    {{#price}}
-    <p>price: {{.}}</p>
-    {{/price}}
+  {{#list}}
+  <div class="item product" {{#data}}data-data='{{.}}'{{/data}} style='background-image: url("{{image}}");'>
+    <div class="details">
+    <span class="lead">{{name}}</span><br/>
+    {{#price}}<span>{{.}}</span>{{/price}}
+    {{#description}}<span>{{.}}</span>{{/description}}
+    </div>
   </div>
+  {{/list}}
 </script>
+
 </body>
 </html>

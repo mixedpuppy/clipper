@@ -1,0 +1,100 @@
+body {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+#buttons {
+  text-align: center;
+  margin: auto;
+}
+
+#buttons > span {
+  display: inline;
+}
+
+/* carousel */
+.carousel {
+  padding: 0;
+  margin: 0 0 10px;
+  background: none;
+  z-index: 1;
+  border-radius: 4px;
+}
+
+/* hide prev/next buttons on narrow screens */
+
+.carousel-wrapper {
+  padding: 0;
+  position: relative;
+  z-index: 1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.carousel .item {
+  background-color: rgb(255,255,255);
+  overflow: hidden;
+  height: 300px;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  border-radius: 4px;
+}
+/*
+.carousel .item > img {
+  display: inline;
+  width: 100%;
+  height: 100%;
+}
+*/
+.carousel .item > .details {
+  position: absolute;
+  bottom: 0;
+  margin: 0;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.7);
+  width: 100%;
+}
+
+.cycle-prev {
+  left: 0;
+}
+.cycle-next {
+  right: 0;
+}
+.cycle-prev, .cycle-next {
+  position: absolute;
+  bottom: 0;
+  line-height: 1em;
+  font-size: 2em;
+  width: 20%;
+  text-align: center;
+  padding: auto;
+  color: rgba(0, 57, 255, 0.6);
+  z-index: 1000;
+  cursor: pointer;
+}
+.cycle-prev:hover,
+.cycle-next:hover {
+  color: rgba(0, 57, 255, 1);
+}
+.cycle-pager { 
+  text-align: center;
+  padding: 0;
+  overflow: hidden;
+}
+.cycle-pager span {
+  margin: 2px;
+  font-family: arial;
+  font-size: 2em;
+  line-height: .75;
+  color: #ddd;
+  cursor: pointer; 
+}
+.cycle-pager span.cycle-pager-active {
+  color: rgba(0, 57, 255, 0.6);
+}
+.cycle-pager span:hover {
+  color: rgba(0, 57, 255, 1);
+}
+.cycle-pager > * { cursor: pointer;}
