@@ -149,9 +149,9 @@
 
   <div class="container_9 section">
     <div id="buttons" style="float: right; display: none; vertical-align: bottom; padding-top: 10px;">
-      <button class="btn btn-sm" onclick="reflow()" title="empty all clips">Refresh</button>
-      <button class="btn btn-sm" onclick="clearStorage(this)" title="empty all clips">Empty</button>
-      <button class="btn btn-sm" style="float: right;" onclick="activate(this)" title="activate clipper">Activate >></button>
+      <button class="btn btn-sm btn-primary" onclick="reflow()" title="empty all clips">Refresh</button>
+      <button class="btn btn-sm btn-primary" onclick="clearStorage(this)" title="empty all clips">Empty</button>
+      <button class="btn btn-sm btn-primary" onclick="activate(this)" title="activate clipper">Re-Activate >></button>
     </div>
     <h1>clipper <img src="clipper.png" width="64" height="64"/></h1>
   </div>
@@ -179,7 +179,9 @@
     </h2>
   </div>
   <div id="cart-stream" class="content container_9 active">
-    <img src="http://s3.amazonaws.com/resized-images-new/40E473CE-9C84-4D7A-A1A5-31B2D8A2A35C" />
+    <div>
+      <img src="http://s3.amazonaws.com/resized-images-new/40E473CE-9C84-4D7A-A1A5-31B2D8A2A35C" />
+    </div>
     <img src="http://s3.amazonaws.com/resized-images-new/B60650DF-65F1-4D13-9286-408387FD137B" />
     <img src="http://s3.amazonaws.com/resized-images-new/9DDEC32A-1823-4F6B-B8AC-956C7443C9E8" />
     <img src="http://s3.amazonaws.com/resized-images-new/1262D972-148C-41E8-AD2A-AB4C1AD2D222" />
@@ -204,10 +206,12 @@
   </div>
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
-  <div class="product-entry">
-    <p class="top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right">x</button>{{title}}</p>
-    <a href="{{url}}" target="_blank"><img src="{{image}}"/></a>
-    <p class="bottom"></p>
+  <div class="product-entry item">
+    <div class="item">
+      <div class="overlay top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right"><span aria-hidden="true">&times;</span></button>{{title}}</div>
+      <a href="{{url}}" target="_blank"><img src="{{image}}"/></a>
+      <span class="overlay bottom"></span>
+    </div>
   </div>
 </script>
 </body>

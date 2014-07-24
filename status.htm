@@ -141,20 +141,20 @@
         data-cycle-paused="true"
         data-cycle-slides="&gt; div">
       </div>
-      <div class="clearfix">
-        <span class="cycle-prev center">&lsaquo;</span>
-        <div class="cycle-pager center"></div>
-        <span class="cycle-next center">&rsaquo;</span>
-      </div>
     </div>
   </div>
     
+  <div class="clearfix">
+    <span class="cycle-prev center">&lsaquo;</span>
+    <span class="cycle-next center">&rsaquo;</span>
+    <div class="cycle-pager center"></div>
+  </div>
   </div>
 
-  <div id="buttons">
-  <span type="button" class="btn btn-default" onclick="saveMark();">Save</span>
-  <span type="button" class="btn btn-default" href="./" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</span>
-  <span type="button" class="btn btn-default" onclick="showData();">Show Data</span>
+  <div id="buttons" class="clearfix">
+    <span type="button" class="btn btn-default" onclick="saveMark();">Save</span>
+    <span type="button" class="btn btn-default" href="./" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</span>
+    <span type="button" class="btn btn-default" onclick="showData();">Show Data</span>
   </div>
 <div id="debug-data" style="display: none;" class="clearfix">
   <div>Page Marked: <div id="shared" class="textbox"></div></div>

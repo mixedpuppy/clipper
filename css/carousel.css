@@ -1,5 +1,5 @@
 body {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 #buttons {
@@ -28,6 +28,8 @@ body {
   z-index: 1;
   border-radius: 4px;
   overflow: hidden;
+  box-shadow:         0 0 5px 6px #ccc;
+  border: thin solid #aaa;
 }
 
 .carousel .item {
@@ -38,7 +40,8 @@ body {
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
-  border-radius: 4px;
+  border-top-left-radius:  4px;
+  border-top-right-radius:  4px;
 }
 /*
 .carousel .item > img {
@@ -57,14 +60,14 @@ body {
 }
 
 .cycle-prev {
+  float: left;
   left: 0;
 }
 .cycle-next {
+  float: right;
   right: 0;
 }
 .cycle-prev, .cycle-next {
-  position: absolute;
-  bottom: 0;
   line-height: 1em;
   font-size: 2em;
   width: 20%;
@@ -86,8 +89,8 @@ body {
 .cycle-pager span {
   margin: 2px;
   font-family: arial;
-  font-size: 2em;
-  line-height: .75;
+  font-size: 2.5em;
+  line-height: 1em;
   color: #ddd;
   cursor: pointer; 
 }
