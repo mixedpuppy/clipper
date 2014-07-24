@@ -177,7 +177,12 @@ footer, .section {
 }
 
 .item .close {
-  font-size: 18px;
+  border-radius: 50%;
+  border: thin solid #999;
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+  text-align: center;
 }
 .item img {
   max-width: 100%;
