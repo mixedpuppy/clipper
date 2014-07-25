@@ -7,15 +7,22 @@
 
   <link href="css/bootstrap.min.css" rel="stylesheet">
   <link href="css/ga.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/featherlight.min.css" type="text/css" rel="stylesheet" title="Featherlight Styles" />
   <link href="css/style.css" media="screen" rel="stylesheet" type="text/css" />
 
-  <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
-  <script type="text/javascript" src="js/jquery.stalactite.min.js"></script> 
+  <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
+  <script src="js/jquery.stalactite.min.js" type="text/javascript"></script> 
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
+  <script src="js/featherlight.min.js" type="application/javascript"></script>
   <script src="./manifest.js" type="text/javascript"></script>
 
   <script type="text/javascript">
     //<![CDATA[
+    function parseUrl(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        return a;
+    }
 
     function getItems() {
       var items = localStorage["cart"];
@@ -79,14 +86,12 @@
         }
         for (var i in items) {
           var entry = items[i];
-          //dump(JSON.stringify(entry)+"\n");
-          var image = entry["og:image"] || entry.previews[0];
-          if (!image)
-            continue;
+          dump(JSON.stringify(entry)+"\n");
           var h = $("#product-detail-tmpl").mustache({
-            url: entry.url,
-            title: entry.title,
-            image: image || ""
+            siteName: entry.siteName || parseUrl(entry.data.url).host,
+            url: entry.data.url,
+            title: entry.data.name,
+            image: entry.data.image
           });
           cart.prepend(h);
         }
@@ -113,19 +118,70 @@
       reflow();
     }
     
-    function clearEntry(url) {
+    function getEntry(url) {
       var items = getItems();
       for (var i in items) {
         var entry = items[i];
         if (entry.url == url) {
-          items.splice(i, 1);
-          localStorage["cart"] = JSON.stringify(items);
-          reflow();
-          return;
+          return [entry, i];
         }
-      }    
+      }
     }
 
+    function clearEntry(url) {
+      var items = getItems();
+      var [entry, i] = getEntry(url);
+      items.splice(i, 1);
+      localStorage["cart"] = JSON.stringify(items);
+      reflow();
+    }
+
+    function getData(data) {
+      if (data.microdata && data.microdata.items.length) {
+        for (var i in data.microdata.items) {
+          var item = data.microdata.items[i];
+          var properties = item.properties;
+          if (item.types.indexOf("http://schema.org/Product") >= 0) {
+            if (properties.name) {
+              data.name = properties.name;
+            }
+            if (properties.image) {
+              data.image = properties.image;
+            }
+            if (properties.offers && properties.offers.length) {
+              data.price = properties.offers[0].properties.price;
+            }
+          } else
+          if (types.indexOf("http://data-vocabulary.org/Product") >= 0) {
+            if (properties.name) {
+              data.name = properties.name;
+            }
+            if (properties.image) {
+              data.image = properties.image;
+            }
+            if (properties.offerDetails && properties.offerDetails.length) {
+              data.price = properties.offerDetails[0].properties.price;
+            }
+          }
+          //$("#carousel-chooser").append($("#product-detail-tmpl").mustache(d));
+        }
+      }      
+    }
+
+    function showEntry(event, url) {
+      if (event.metaKey) {
+        window.open(url, "_blank");
+        return;
+      }
+      var [entry, i] = getEntry(url);
+      getData(entry);
+      dump("showing entry "+JSON.stringify(entry)+"\n");
+      var modal = $('#detailModal');
+      modal.empty();
+      var h = $("#product-modal-tmpl").mustache(entry);
+      modal.append(h);
+      $.featherlight('#detailModal', { variant: "fixwidth" });
+    }
     //]]>
   </script>
 
@@ -178,39 +234,31 @@
       Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
     </h2>
   </div>
-  <div id="cart-stream" class="content container_9 active">
-    <div>
-      <img src="http://s3.amazonaws.com/resized-images-new/40E473CE-9C84-4D7A-A1A5-31B2D8A2A35C" />
+  <div id="cart-stream" class="content container_9 active"></div>
+
+  <div id="detailModal" class="lightbox" style="border:none;" tabindex="-1" aria-labelledby="clip details" aria-hidden="true" hidden="true"></div>
+
+<script id="product-modal-tmpl" type="text/x-jquery-tmpl">
+  <div class="product-detail">
+    <div class="product-div">
+      <h3>{{title}}</h3>
+      <a href="{{url}}" target="_blank">{{#siteName}}{{siteName}}{{/siteName}}{{^siteName}}{{url}}{{/siteName}}</a>
+      {{#price}}<span>Price: {{price}}</span>{{/price}}
+      <p class="lead">{{description}}<span class="after"></span></p>
     </div>
-    <img src="http://s3.amazonaws.com/resized-images-new/B60650DF-65F1-4D13-9286-408387FD137B" />
-    <img src="http://s3.amazonaws.com/resized-images-new/9DDEC32A-1823-4F6B-B8AC-956C7443C9E8" />
-    <img src="http://s3.amazonaws.com/resized-images-new/1262D972-148C-41E8-AD2A-AB4C1AD2D222" />
-    <img src="http://s3.amazonaws.com/resized-images-new/78A88D94-1004-4138-8824-2BF7F1C39A6D" />
-    <img src="http://s3.amazonaws.com/resized-images-new/E8DF490E-9546-482B-9B0B-4F831E6058A5" />
-    <img src="http://s3.amazonaws.com/resized-images-new/C8C44FD6-C258-41B4-B2EA-F2E6057F210B" />
-    <img src="http://s3.amazonaws.com/resized-images-new/14E944F1-8255-4B8F-B6BA-79B57096855F" />
-    <img src="http://s3.amazonaws.com/resized-images-new/2B826972-5723-4EAC-B1CC-11E789B1B89B" />
-    <img src="http://s3.amazonaws.com/resized-images-new/BAD77894-3B95-4120-B4A6-E3D777DFDD90" />
-    <img src="http://s3.amazonaws.com/resized-images-new/31A6302B-EAAE-4593-8C2A-83EF0EE194D5" />
-    <img src="http://s3.amazonaws.com/resized-images-new/589361ED-4309-4ADD-9B97-833431B279F0" />
-    <img src="http://s3.amazonaws.com/resized-images-new/E01073EC-8CDD-4A01-B872-4E46D7F42831" />
-    <img src="http://s3.amazonaws.com/resized-images-new/B7D4B10B-8425-4405-A7AE-446357B90E07" />
-    <img src="http://s3.amazonaws.com/resized-images-new/92E053FE-133A-43DB-9FBA-D4C95F2FC33A" />
-    <img src="http://s3.amazonaws.com/resized-images-new/BF12BE28-2A48-43BE-A5B9-AE54F08D11F8" />
-    <img src="http://s3.amazonaws.com/resized-images-new/F7606CF0-C758-4054-A691-9240192EFB6A" />
-    <img src="http://s3.amazonaws.com/resized-images-new/5CD7C91C-CB3D-43BB-83B2-1B79422AF771" />
-    <img src="http://s3.amazonaws.com/resized-images-new/9541AEC1-C0C0-4B76-A535-41E1290C1A6C" />
-    <img src="http://s3.amazonaws.com/resized-images-new/170C9FEB-7376-412B-BCD3-017485160F0F" />
-    <img src="http://s3.amazonaws.com/resized-images-new/3C74773F-4AFA-4893-967B-7362102798E1" />
-    <img src="http://s3.amazonaws.com/resized-images-new/017C75E8-F1E4-4301-93A2-4DE09F26B4CF" />
+    <div class="product-div">
+      <img src="{{data.image}}"/>
+    </div>
+    <div class="clearfix"></div>
   </div>
+</script>
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   <div class="product-entry item">
-    <div class="item">
-      <div class="overlay top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right"><span aria-hidden="true">&times;</span></button>{{title}}</div>
-      <a href="{{url}}" target="_blank"><img src="{{image}}"/></a>
-      <span class="overlay bottom"></span>
+    <div class="item" onclick="showEntry(event, '{{url}}')">
+      <span class="overlay top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right"><span aria-hidden="true">&times;</span></button>{{#siteName}}{{siteName}}{{/siteName}}</span>
+      <img src="{{image}}"/>
+      <span class="overlay bottom title">{{title}}</span>
     </div>
   </div>
 </script>

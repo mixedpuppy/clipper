@@ -7,81 +7,56 @@ body {
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 500;
   word-spacing: 2px;
-  font-size: 11px;
   color: #333;
   padding: 0px 80px 40px;
 /*  background: #fff url('../i/stalactite.png') top right no-repeat;*/
 }
 
-h2 {
-  color: #444;
-  font-size: 20px;
-  line-height: 30px;
-  font-weight: 500;
-  word-spacing: 1px;
+/* featherlight overrides */
+.fixwidth {
+  background: rgba(256,256,256, 0.8);
+  overflow: hidden;
 }
-
-h3.active {
-  background: #999;
+.fixwidth .featherlight-content {
+  width: 80%;
+  max-height: 80%;
+  padding: 0 20px;
+  margin: 0;
+  border-bottom: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  /*color: #fff;*/
+  /*background: #111;*/
 }
-
-h3 {
-  
-  width: 200px;
-  margin: 5px 0;
-  padding: 5px;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-weight: 100;
-  text-align: left;
-  font-size: 10px;
-  
-  background: #ccc;
+.fixwidth .featherlight-close {
   color: #fff;
+  background: #333;
+}
+.fixwidth .featherlight-inner {
+  max-height: 80%;
+}
+
+.product-detail {
   
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-       border-radius: 5px;
 }
-
-h3 a:link, h3 a:visited {
-  color: #fff;
-  text-decoration: none;
+.product-detail > div:first-child {
+  float: right;
+  max-width: 50%;
+  padding-left: 10px;
 }
-h3 a:hover, h3 a:active {
-  background: none;
-  color: #fff;
-  text-decoration: underline;
+.product-div {
+  max-width: 50%;
 }
-
-p {
-  margin: 0 0 25px 0;
-  line-height: 17px;
-  font-size: 11px;
+.product-div > img {
+  max-height: 500px;
+  max-width: 99%;
 }
-
-img {
-  border: 0 !important;
+.product-detail .lead {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  font-size: 1.2em;
 }
-
-a#download:link, a#download:visited {
-  margin-top: -20px;
-  display: block;
-  width: 100px;
-  height: 100px;
-
-  border: 1px dashed #333;
-  -webkit-border-radius: 100px;
-     -moz-border-radius: 100px;
-          border-radius: 100px;
-}
-
-a#download:hover, a#download:active {
-  background: #efefef;
-}
-
-.mute { font-size: 9px; color: #444; }
 
 a:focus {
   outline: none;
@@ -140,21 +115,21 @@ footer, .section {
 
 .product-entry {
   background-color: white;
-  max-width: 24%;
+  width: 25%;
 }
 @media only screen and (max-width:1200px) {
   .product-entry {
-    max-width: 32%;
+    width: 32%;
   }
 }
 @media only screen and (max-width:960px) {
   .product-entry {
-    max-width: 48%;
+    width: 48%;
   }
 }
 @media only screen and (max-width:700px) {
   .product-entry {
-    max-width: 100%;
+    width: 100%;
   }
 }
 .product-entry {
@@ -183,9 +158,16 @@ footer, .section {
   height: 24px;
   font-size: 20px;
   text-align: center;
+  background-color: white;
+  opacity: .9;
+  color: #999;
+}
+.item .close:hover {
+  opacity: 1;
+  color: black;
 }
 .item img {
-  max-width: 100%;
+  width: 100%;
   max-height: 500px;
   min-height: 150px;
   min-width: 150px;
@@ -197,6 +179,8 @@ footer, .section {
   padding: 5px;
   display: none;
   font-size: 1.2em;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #999;
   /*border: 1px solid green;*/
 }
 
@@ -204,16 +188,12 @@ footer, .section {
   /*border: 1px solid #999;*/
 }
 .item:hover .overlay.top {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: black;
 }
-.item:hover .overlay.bottom {
+.item .overlay.bottom {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.7);
   color: #999;
+  bottom: 0;
 }
 
 .item:hover .overlay {
@@ -222,4 +202,8 @@ footer, .section {
 
 .btn {
   /*margin: 4px;*/
+}
+
+.item .overlay.title {
+  font-size: 1em;
 }

@@ -18,7 +18,7 @@
         dump("****** unable to send socialMarkUpdate "+e+"\n");
     }
   }
-  var shareData;
+  var shareData, previews = {};
   function setData(data) {
     //dump("******** got OpenGraphData event! "+data+"\n");
     shareData = JSON.parse(data);
@@ -26,16 +26,14 @@
     $("#data").text(data);
     $("#site-detail").empty();
     $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
-    var previews = {};
 
     if (shareData.microdata && shareData.microdata.items.length) {
       for (var i in shareData.microdata.items) {
         var item = shareData.microdata.items[i];
         var properties = item.properties;
-        if (!properties.url)
-          properties.url = shareData.url;
         var d = {
-          data: JSON.stringify(item)
+          url: shareData.url,
+          data: item
         };
         if (item.types.indexOf("http://schema.org/Product") >= 0) {
           if (properties.name) {
@@ -63,7 +61,7 @@
         //$("#carousel-chooser").append($("#product-detail-tmpl").mustache(d));
       }
     }
-    
+
     if (shareData.previews) {
       for (var i in shareData.previews) {
         if (!shareData.previews[i])
@@ -71,7 +69,7 @@
         var d = {
           name: shareData.title,
           url: shareData.url,
-          image: shareData.previews[i]
+          image: shareData.previews[i],
         };
         previews[d.image] = d;
         //$("#carousel-chooser").append($("#page-detail-tmpl").mustache(d));
@@ -88,6 +86,9 @@
     }
 
     var previewData = [previews[d] for (d in previews)];
+    if (previewData.length < 2) {
+      $(".carousel-inner span").hide();
+    }
     $("#carousel-chooser").append($("#product-detail-tmpl").mustache({list: previewData}));
     $('#carousel-chooser').cycle();
   }
@@ -96,6 +97,9 @@
   });
   
   function saveMark() {
+    // get the choosen item
+    var image = $(".cycle-slide-active").attr("image");
+    shareData.data = previews[image];
     // store into localstorage, and set the mark
     var items = localStorage["cart"];
     if (items) {
@@ -178,11 +182,10 @@
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   {{#list}}
-  <div class="item product" {{#data}}data-data='{{.}}'{{/data}} style='background-image: url("{{image}}");'>
+  <div class="item product" style='background-image: url("{{image}}");' image="{{image}}">
     <div class="details">
     <span class="lead">{{name}}</span><br/>
     {{#price}}<span>{{.}}</span>{{/price}}
-    {{#description}}<span>{{.}}</span>{{/description}}
     </div>
   </div>
   {{/list}}
