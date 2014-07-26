@@ -91,7 +91,8 @@
             siteName: entry.siteName || parseUrl(entry.data.url).host,
             url: entry.data.url,
             title: entry.data.name,
-            image: entry.data.image
+            image: entry.data.image,
+            enableShare: !!window.MozActivity
           });
           cart.prepend(h);
         }
@@ -178,9 +179,34 @@
       dump("showing entry "+JSON.stringify(entry)+"\n");
       var modal = $('#detailModal');
       modal.empty();
+      entry.enableShare = !!window.MozActivity;
       var h = $("#product-modal-tmpl").mustache(entry);
       modal.append(h);
       $.featherlight('#detailModal', { variant: "fixwidth" });
+    }
+
+//{
+//  url: "http://www.caraveo.com", 
+//  title: "This is a test of web activities", 
+//  description: "This test is delivered from web activities", 
+//  source: "Luke, use the source",
+//  image: "http://www.caraveo.com/scream.jpg"
+//}
+
+    function startActivity(data) {
+      var activity = new MozActivity({
+        // Ask for the "pick" activity
+        name: "share",
+        // Provide the data required by the filters of the activity
+        data: data
+      });
+      activity.onsuccess = function() {
+        console.log("got onsuccess: "+this.result);
+      };
+      activity.onerror = function() {
+        console.log("got onerror "+this.error.name);
+      };
+      return false;
     }
     //]]>
   </script>
@@ -239,6 +265,7 @@
   <div id="detailModal" class="lightbox" style="border:none;" tabindex="-1" aria-labelledby="clip details" aria-hidden="true" hidden="true"></div>
 
 <script id="product-modal-tmpl" type="text/x-jquery-tmpl">
+  {{#enableShare}}<button class="share" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></button>{{/enableShare}}
   <div class="product-detail">
     <div class="product-div">
       <h3>{{title}}</h3>
@@ -256,7 +283,13 @@
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   <div class="product-entry item">
     <div class="item" onclick="showEntry(event, '{{url}}')">
-      <span class="overlay top"><button type="button" class="close" onclick="clearEntry('{{url}}')" style="float: right"><span aria-hidden="true">&times;</span></button>{{#siteName}}{{siteName}}{{/siteName}}</span>
+      <span class="overlay top">
+        <span style="float: right">
+          {{#enableShare}}<button class="share" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></button>{{/enableShare}}
+          <button type="button" class="close" onclick="clearEntry('{{url}}'); event.stopPropagation();"><span aria-hidden="true">&times;</span></button>
+        </span>
+        {{#siteName}}{{siteName}}{{/siteName}}
+      </span>
       <img src="{{image}}"/>
       <span class="overlay bottom title">{{title}}</span>
     </div>

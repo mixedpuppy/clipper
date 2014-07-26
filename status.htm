@@ -23,7 +23,6 @@
     //dump("******** got OpenGraphData event! "+data+"\n");
     shareData = JSON.parse(data);
     $("#shared").text(shareData.url);
-    $("#data").text(data);
     $("#site-detail").empty();
     $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
 
@@ -110,6 +109,9 @@
     items.push(shareData);
     localStorage["cart"] = JSON.stringify(items);
     socialMarkUpdate(true);
+
+    $("#content").addClass("saved");
+    window.setTimeout(function() { window.close() }, 1000);
   }
   
   function toggleHidden(e) {
@@ -120,8 +122,7 @@
     }
   }
   function showData() {
-    toggleHidden(document.getElementById("product-detail"));
-    toggleHidden(document.getElementById("debug-data"));
+    window.open("data:application/json;charset=utf8,"+encodeURIComponent(JSON.stringify(shareData)));
   }
   </script>
 
@@ -148,18 +149,19 @@
         </div>
       </div>
       <div id="site-detail"></div>
+
+      <div id="saved">
+        <h1 class="label label-success"><img src="clipper.png" width="64" height="64"/> Saved! </h1>
+      </div>
     </div>
 
     <div id="buttons">
       <span type="button" class="btn btn-default" onclick="saveMark();">Save</span>
       <span type="button" class="btn btn-default" href="./" onclick="window.open(this.getAttribute('href'),'clipperCart').focus(); return false;">View Cart</span>
       <span type="button" class="btn btn-default" onclick="showData();">Show Data</span>
+      <span type="button" class="btn btn-default" onclick="window.close();">Close</span>
     </div>
 
-    <div id="debug-data" style="display: none; margin: 10px;">
-      <div>Page Marked: <div id="shared" class="textbox"></div></div>
-      <div>Data: <div id="data" class="textbox"></div></div>
-    </div>
     <div class="clearfix"></div>
   </div>
 

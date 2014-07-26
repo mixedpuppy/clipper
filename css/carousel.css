@@ -6,7 +6,7 @@ body {
 
 #buttons {
   text-align: center;
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 #buttons > span {
@@ -16,8 +16,13 @@ body {
 /* carousel */
 .carousel {
   padding: 0;
-  margin: 0 0 10px;
+  margin: 0;
   border-radius: 4px;
+  height: 300px;
+  width: 100%;
+  background-image: url(/nocamera.png);
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
 /* hide prev/next buttons on narrow screens */
@@ -90,4 +95,42 @@ body {
   border-right: thin solid #aaa;
   border-bottom: thin solid #aaa;
   z-index: 800;
+}
+
+#product-detail {
+  position: relative;
+  padding: 0;
+}
+
+#saved {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  text-align: center;
+  display: none;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.saved #saved {
+  display: block;
+}
+
+#saved > h1 {
+  position: absolute;
+  top: 25%;
+  left: 10%;
+  width: 80%;
+}
+
+#saved > .message > img {
+  vertical-align: middle;
+  margin-bottom: 8px;
+}
+.finish {
+  position: absolute;
+  margin: 10px;
+  bottom: 0;
+  right: 0;
 }
