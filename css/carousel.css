@@ -134,3 +134,12 @@ body {
   bottom: 0;
   right: 0;
 }
+
+.scissors {
+  background-image: url(/clipper.png);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 16px;
+  padding: 6px 19px;
+  margin: 4px;
+}

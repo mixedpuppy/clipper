@@ -200,8 +200,8 @@ footer, .section {
   display: block;
 }
 
-.btn {
-  /*margin: 4px;*/
+.item .btn {
+  padding: 0;
 }
 
 .item .overlay.title {
@@ -225,6 +225,7 @@ footer, .section {
   background-image: url(/share-button-active.png)
 }
 
-#detailModal .share {
+#detailModal .share-btn {
   float: right;
+  padding: 0 12px;
 }

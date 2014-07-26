@@ -266,7 +266,7 @@
   <div id="detailModal" class="lightbox" style="border:none;" tabindex="-1" aria-labelledby="clip details" aria-hidden="true" hidden="true"></div>
 
 <script id="product-modal-tmpl" type="text/x-jquery-tmpl">
-  {{#enableShare}}<button class="share" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></button>{{/enableShare}}
+  {{#enableShare}}<span class="btn glyphicon glyphicon-send share-btn" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></span>{{/enableShare}}
   <div class="product-detail">
     <div class="product-div">
       <h3>{{title}}</h3>
@@ -286,8 +286,8 @@
     <div class="item" onclick="showEntry(event, '{{url}}')">
       <span class="overlay top">
         <span style="float: right">
-          {{#enableShare}}<button class="share" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></button>{{/enableShare}}
-          <button type="button" class="close" onclick="clearEntry('{{url}}'); event.stopPropagation();"><span aria-hidden="true">&times;</span></button>
+          {{#enableShare}}<span class="btn glyphicon glyphicon-send" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></span>{{/enableShare}}
+          <span type="button" class="btn glyphicon glyphicon-remove" onclick="clearEntry('{{url}}'); event.stopPropagation();"></span>
         </span>
         {{#siteName}}{{siteName}}{{/siteName}}
       </span>
