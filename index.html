@@ -14,6 +14,7 @@
   <script src="js/jquery.stalactite.min.js" type="text/javascript"></script> 
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
   <script src="js/featherlight.min.js" type="application/javascript"></script>
+  <script src="js/bootstrap.min.js" type="application/javascript"></script>
   <script src="./manifest.js" type="text/javascript"></script>
 
   <script type="text/javascript">
@@ -209,6 +210,10 @@
       };
       return false;
     }
+
+    function openShare(url) {
+      window.open(url, 'clipper-share', 'centerscreen,width=600px');
+    }
     //]]>
   </script>
 
@@ -283,15 +288,29 @@
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   <div class="product-entry item">
-    <div class="item" onclick="showEntry(event, '{{url}}')">
+    <div class="item">
       <span class="overlay top">
-        <span style="float: right">
-          {{#enableShare}}<span class="btn glyphicon glyphicon-send" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></span>{{/enableShare}}
-          <span type="button" class="btn glyphicon glyphicon-remove" onclick="clearEntry('{{url}}'); event.stopPropagation();"></span>
+        <span style="float: right; position: relative">
+          {{^enableShare}}
+          <span class="dropdown">
+            <span class="btn glyphicon glyphicon-send" id="drop4" role="button" data-toggle="dropdown" href="#"></span>
+            <div class="dropdown-menu pull-right" style="padding:4px;">
+              <span class="btn facebook-icon" onclick="openShare('https://www.facebook.com/sharer/sharer.php?u={{url}}');"></span>
+              <span class="btn twitter-icon" onclick="openShare('https://twitter.com/intent/tweet?url={{url}}');"></span>
+              <span class="btn gplus-icon" onclick="openShare('https://plus.google.com/share?url={{url}}');"></span>
+              <span class="btn linkedin-icon" onclick="openShare('https://www.linkedin.com/shareArticle?mini=true&url={{url}}');"></span>
+              <span class="btn weibo-icon" onclick="openShare('http://service.weibo.com/share/share.php?url={{url}}');"></span>
+              <span class="btn mixi-icon" onclick="openShare('https://mixi.jp/share.pl?u={{url}}');"></span>
+              <span class="btn vk-icon" onclick="openShare('https://vk.com/share.php?url={{url}}');"></span>
+            </div>
+          </span>
+          {{/enableShare}}
+          {{#enableShare}}<span class="btn glyphicon glyphicon-send" onclick="startActivity({url: '{{url}}'});"></span>{{/enableShare}}
+          <span type="button" class="btn glyphicon glyphicon-remove" onclick="clearEntry('{{url}}');"></span>
         </span>
         {{#siteName}}{{siteName}}{{/siteName}}
       </span>
-      <img src="{{image}}"/>
+      <img src="{{image}}" onclick="showEntry(event, '{{url}}')"/>
       <span class="overlay bottom title">{{title}}</span>
     </div>
   </div>
