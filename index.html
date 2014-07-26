@@ -87,11 +87,12 @@
         for (var i in items) {
           var entry = items[i];
           dump(JSON.stringify(entry)+"\n");
+          var data = entry.data || entry;
           var h = $("#product-detail-tmpl").mustache({
-            siteName: entry.siteName || parseUrl(entry.data.url).host,
-            url: entry.data.url,
-            title: entry.data.name,
-            image: entry.data.image,
+            siteName: entry.siteName || parseUrl(data.url).host,
+            url: data.url,
+            title: data.name,
+            image: data.image,
             enableShare: !!window.MozActivity
           });
           cart.prepend(h);
