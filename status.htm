@@ -9,6 +9,12 @@
   <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
 
   <script>
+  function parseUrl(url) {
+      var a = document.createElement('a');
+      a.href = url;
+      return a;
+  }
+
   function socialMarkUpdate(isMarked) {
     try {
     var evt = document.createEvent("CustomEvent");
@@ -22,7 +28,9 @@
   function setData(data) {
     //dump("******** got OpenGraphData event! "+data+"\n");
     shareData = JSON.parse(data);
-    $("#shared").text(shareData.url);
+    if (!shareData.siteName) {
+      shareData.siteName = parseUrl(shareData.url).host;
+    }
     $("#site-detail").empty();
     $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
 

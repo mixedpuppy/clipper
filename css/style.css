@@ -159,7 +159,7 @@ footer, .section {
   font-size: 20px;
   text-align: center;
   background-color: white;
-  opacity: .9;
+  opacity: .8;
   color: #999;
 }
 .item .close:hover {
@@ -180,8 +180,8 @@ footer, .section {
   padding: 5px;
   display: none;
   font-size: 1.2em;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #999;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #666;
   /*border: 1px solid green;*/
 }
 
@@ -193,7 +193,7 @@ footer, .section {
 .item .overlay.bottom {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
-  color: #999;
+  color: #666;
   bottom: 0;
 }
 
