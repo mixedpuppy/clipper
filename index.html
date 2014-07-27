@@ -26,12 +26,19 @@
     }
 
     function getItems() {
-      var items = localStorage["cart"];
-      if (items) {
-        items = JSON.parse(items);
-      } else {
-        items = [];
+      remoteStorage.clips.list().then(function(item) {
+      dump("clip: "+JSON.stringify(item)+"\n");
+      });
+      //localStorage["cart"];
+      dump("clips: "+JSON.stringify(items)+"\n");
+      for (var i in items) {
+        dump("i: "+i+"\n");
       }
+      //if (items) {
+      //  items = JSON.parse(items);
+      //} else {
+      //  items = [];
+      //}
       return items;
     }
 
@@ -75,37 +82,41 @@
         
         var cart = $('#cart-stream');
         // get data from localstorage and fill in our river
-        var items = getItems();
-        $("#intro2").css("display", "none");
-        if (items.length) {
+        //var items = getItems();
+        //$("#intro2").css("display", "none");
+        //if (items.length) {
           $("#intro").css("display", "none");
           $("#buttons").css("display", "block");
           cart.empty();
-        } else {
-          $("#intro").css("display", "block");
-          $("#buttons").css("display", "none");
-        }
-        for (var i in items) {
-          var entry = items[i];
-          dump(JSON.stringify(entry)+"\n");
-          var data = entry.data || entry;
-          var h = $("#product-detail-tmpl").mustache({
-            siteName: entry.siteName || parseUrl(data.url).host,
-            url: data.url,
-            title: data.name,
-            image: data.image,
-            enableShare: !!window.MozActivity
+        //} else {
+        //  $("#intro").css("display", "block");
+        //  $("#buttons").css("display", "none");
+        //}
+        remoteStorage.clips.list().then(function(entries) {
+          for (var url in entries) {
+            var entry = entries[url];
+            dump("got "+entry.key+"\n");
+            var data = entry.data || entry;
+            var h = $("#product-detail-tmpl").mustache({
+              key: entry.key,
+              siteName: entry.siteName || parseUrl(data.url).host,
+              url: data.url,
+              title: data.name,
+              image: data.image,
+              enableShare: !!window.MozActivity
+            });
+            cart.prepend(h);
+          }
+          cart.stalactite({
+            fluid: true
           });
-          cart.prepend(h);
-        }
+          updateLoader(function() {
+            cart.fadeIn();
+          });
+
+        });
         //$("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
 
-        cart.stalactite({
-          fluid: true
-        });
-        updateLoader(function() {
-          cart.fadeIn();
-        });
       };
   
     function showButtons(e) {
@@ -117,7 +128,7 @@
     }
     
     function clearStorage() {
-      localStorage["cart"] = "";
+      //localStorage["cart"] = "";
       reflow();
     }
     
@@ -131,11 +142,12 @@
       }
     }
 
-    function clearEntry(url) {
-      var items = getItems();
-      var [entry, i] = getEntry(url);
-      items.splice(i, 1);
-      localStorage["cart"] = JSON.stringify(items);
+    function clearEntry(id) {
+      remoteStorage.clips.remove(id);
+      //var items = getItems();
+      //var [entry, i] = getEntry(url);
+      //items.splice(i, 1);
+      //localStorage["cart"] = JSON.stringify(items);
       reflow();
     }
 
@@ -171,20 +183,23 @@
       }      
     }
 
-    function showEntry(event, url) {
+    function showEntry(event, key) {
       if (event.metaKey) {
         window.open(url, "_blank");
         return;
       }
-      var [entry, i] = getEntry(url);
-      getData(entry);
-      dump("showing entry "+JSON.stringify(entry)+"\n");
-      var modal = $('#detailModal');
-      modal.empty();
-      entry.enableShare = !!window.MozActivity;
-      var h = $("#product-modal-tmpl").mustache(entry);
-      modal.append(h);
-      $.featherlight('#detailModal', { variant: "fixwidth" });
+      remoteStorage.clips.get(key).then(function(entry) {
+        //var [entry, i] = getEntry(url);
+        dump("showing entry "+JSON.stringify(entry)+"\n");
+        getData(entry);
+        var modal = $('#detailModal');
+        modal.empty();
+        entry.enableShare = !!window.MozActivity;
+        var h = $("#product-modal-tmpl").mustache(entry);
+        modal.append(h);
+        $.featherlight('#detailModal', { variant: "fixwidth" });
+      });
+
     }
 
 //{
@@ -236,10 +251,10 @@
 <body onload="reflow();">
 
   <div class="container_9 section">
-    <div id="buttons" style="float: right; display: none; vertical-align: bottom; padding-top: 10px;">
-      <button class="btn btn-sm btn-primary" onclick="reflow()" title="empty all clips">Refresh</button>
-      <button class="btn btn-sm btn-primary" onclick="clearStorage(this)" title="empty all clips">Empty</button>
-      <button class="btn btn-sm btn-primary" onclick="activate(this)" title="activate clipper">Re-Activate >></button>
+    <div id="buttons" style="float: right; display: none; vertical-align: bottom; padding-top: 5px; padding-right: 10px;">
+      <button class="btn btn-sm glyphicon glyphicon-refresh" onclick="reflow()" title="refresh clip list"></button>
+      <button class="btn btn-sm glyphicon glyphicon-ban-circle" onclick="clearStorage(this)" title="empty all clips"></button>
+      <button class="btn btn-sm glyphicon glyphicon-download" onclick="activate(this)" title="re-activate clipper"></button>
     </div>
     <h1>clipper <img src="clipper.png" width="64" height="64"/></h1>
   </div>
@@ -306,14 +321,16 @@
           </span>
           {{/enableShare}}
           {{#enableShare}}<span class="btn glyphicon glyphicon-send" onclick="startActivity({url: '{{url}}'});"></span>{{/enableShare}}
-          <span type="button" class="btn glyphicon glyphicon-remove" onclick="clearEntry('{{url}}');"></span>
+          <span type="button" class="btn glyphicon glyphicon-remove" onclick="clearEntry('{{key}}');"></span>
         </span>
         {{#siteName}}{{siteName}}{{/siteName}}
       </span>
-      <img src="{{image}}" onclick="showEntry(event, '{{url}}')"/>
+      <img src="{{image}}" onclick="showEntry(event, '{{key}}')"/>
       <span class="overlay bottom title">{{title}}</span>
     </div>
   </div>
 </script>
 </body>
+  <script src="js/remotestorage.js" type="application/javascript"></script>
+  <script src="js/storage.js" type="application/javascript"></script>
 </html>

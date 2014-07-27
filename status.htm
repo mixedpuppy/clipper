@@ -7,6 +7,9 @@
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
   <script src="js/jquery.cycle2.min.js" type="application/javascript"></script>
   <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
+  <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
+  <script src="js/remotestorage.js" type="application/javascript"></script>
+  <script src="js/storage.js" type="application/javascript"></script>
 
   <script>
   function parseUrl(url) {
@@ -107,15 +110,16 @@
     // get the choosen item
     var image = $(".cycle-slide-active").attr("image");
     shareData.data = previews[image];
-    // store into localstorage, and set the mark
-    var items = localStorage["cart"];
-    if (items) {
-      items = JSON.parse(items);
-    } else {
-      items = [];
-    }
-    items.push(shareData);
-    localStorage["cart"] = JSON.stringify(items);
+    //// store into localstorage, and set the mark
+    //var items = localStorage["cart"];
+    //if (items) {
+    //  items = JSON.parse(items);
+    //} else {
+    //  items = [];
+    //}
+    //items.push(shareData);
+    //localStorage["cart"] = JSON.stringify(items);
+    remoteStorage.clips.add(shareData);
     socialMarkUpdate(true);
 
     $("#content").addClass("saved");

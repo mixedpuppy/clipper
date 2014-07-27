@@ -8,7 +8,8 @@ body {
   font-weight: 500;
   word-spacing: 2px;
   color: #333;
-  padding: 0px 80px 40px;
+  padding: 10px 80px 40px;
+  margin-top: -20px;
 /*  background: #fff url('../i/stalactite.png') top right no-repeat;*/
 }
 
