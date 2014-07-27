@@ -41,14 +41,11 @@ RemoteStorage.config.changeEvents = {
   conflict: true
 };
 
-remoteStorage.setApiKeys('dropbox', {
-  //see https://www.dropbox.com/developers/apps/info/cybbbiarf4dkrce
-  api_key: 'lmpf6k4v40la9ld'
+remoteStorage.setApiKeys('googledrive', {
+  client_id: '122384013929-st9tlnkl6di0b24iakvb803sugbb5tvf.apps.googleusercontent.com'
 });
 
-remoteStorage.access.claim('clips', 'rw');
-remoteStorage.displayWidget();
-remoteStorage.clips.init();
-remoteStorage.clips.on('change', function(event) {
-  console.log('change from '+event.origin, event);
+remoteStorage.setApiKeys('dropbox', {
+  api_key: 'bc1lv16y9l8teil'
 });
+

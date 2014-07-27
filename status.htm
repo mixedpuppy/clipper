@@ -12,6 +12,11 @@
   <script src="js/storage.js" type="application/javascript"></script>
 
   <script>
+  $(document).ready(function() {
+    remoteStorage.access.claim('clips', 'rw');
+    remoteStorage.clips.init();
+  });
+
   function parseUrl(url) {
       var a = document.createElement('a');
       a.href = url;
