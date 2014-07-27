@@ -8,10 +8,24 @@ body {
   font-weight: 500;
   word-spacing: 2px;
   color: #333;
-  padding: 0px 80px 40px;
+  padding: 70px 80px 40px;
 /*  background: #fff url('../i/stalactite.png') top right no-repeat;*/
 }
 
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 4px 30px;
+  background-color: white;
+  box-shadow: 0 0 4px 2px #ccc;
+  z-index: 5000;
+}
+
+.featherlight {
+  z-index: 100000;
+}
 /* featherlight overrides */
 .fixwidth {
   background: rgba(256,256,256, 0.8);
@@ -134,13 +148,14 @@ footer, .section {
 }
 .product-entry {
   /*border: 1px solid red;*/
+  float: left;
 }
 .product-entry > .item {
   position: relative;
   margin: 10px;
   padding: 0;
   border-radius: 4px;
-  box-shadow: 0 0 4px 5px #ccc;
+  box-shadow: 0 0 4px 2px #ccc;
   border: thin solid #aaa;
   overflow: hidden;
 }
@@ -166,12 +181,13 @@ footer, .section {
   opacity: 1;
   color: black;
 }
-.item > img {
+.item > .image {
   width: 100%;
-  max-height: 500px;
-  min-height: 150px;
-  min-width: 150px;
+  height: 200px;
   cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
 }
 
 .item .overlay {

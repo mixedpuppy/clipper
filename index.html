@@ -11,7 +11,6 @@
   <link href="css/style.css" media="screen" rel="stylesheet" type="text/css" />
 
   <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
-  <script src="js/jquery.stalactite.min.js" type="text/javascript"></script> 
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
   <script src="js/featherlight.min.js" type="application/javascript"></script>
   <script src="js/bootstrap.min.js" type="application/javascript"></script>
@@ -36,43 +35,6 @@
     }
 
       function reflow() {
-        function updateLoader(callback) {
-          setTimeout(function() {
-            $('.stalactite-loader')
-              .css({
-                position: 'fixed',
-                background: '#fff',
-                padding: '20px 20px 15px 20px',
-                top: 0,
-                left: 0
-              });
-              if (callback) {
-                callback.call(this);
-              }
-          }, 1);
-        }
-
-        $('#css-example-a').click(function(e) {
-          e.preventDefault();
-          $(this).parent().addClass('active');
-          $('#css-example').stalactite({
-            fluid: false,
-            cssPrep: false
-          });
-          updateLoader(function() {
-            $('#css-example').fadeIn();
-          });
-        });
-
-        $('#fluid-example-a').click(function(e) {
-          e.preventDefault();
-          $(this).parent().addClass('active');
-          $('#fluid-example').stalactite();
-          updateLoader(function() {
-            $('#fluid-example').fadeIn();
-          });
-        });
-        
         var cart = $('#cart-stream');
         // get data from localstorage and fill in our river
         var items = getItems();
@@ -98,14 +60,6 @@
           });
           cart.prepend(h);
         }
-        //$("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
-
-        cart.stalactite({
-          fluid: true
-        });
-        updateLoader(function() {
-          cart.fadeIn();
-        });
       };
   
     function showButtons(e) {
@@ -235,15 +189,16 @@
 </head>
 <body onload="reflow();">
 
-  <div class="container_9 section">
-    <div id="buttons" style="float: right; display: none; vertical-align: bottom; padding-top: 10px;">
-      <button class="btn btn-sm btn-primary" onclick="reflow()" title="empty all clips">Refresh</button>
-      <button class="btn btn-sm btn-primary" onclick="clearStorage(this)" title="empty all clips">Empty</button>
-      <button class="btn btn-sm btn-primary" onclick="activate(this)" title="activate clipper">Re-Activate >></button>
+  <div class="header" role="navigation">
+    <div id="buttons" style="float: right; vertical-align: bottom; padding-top: 5px; padding-right: 10px;">
+      <button class="btn btn-default btn-sm glyphicon glyphicon-refresh" onclick="reflow()" title="refresh clip list"></button>
+      <button class="btn btn-default btn-sm glyphicon glyphicon-ban-circle" onclick="clearStorage(this)" title="empty all clips"></button>
+      <button class="btn btn-default btn-sm glyphicon glyphicon-download" onclick="activate(this)" title="activate clipper"></button>
     </div>
-    <h1>clipper <img src="clipper.png" width="64" height="64"/></h1>
+    
+    <span style="font-size: 2em">clipper <img src="clipper.png" width="32" height="32"/></span>
   </div>
-  <div id="intro" class="container_9 content">
+  <div id="intro" class="container content">
     <div>
       <span style="width:240px; float: right;">
         <center>
@@ -261,7 +216,7 @@
       </h2>
     </div>
   </div>
-  <div id="intro2" class="container_9 content" style="display: none">
+  <div id="intro2" class="content" style="display: none">
     <h2 class="slogan grid6">
       Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
     </h2>
@@ -310,7 +265,7 @@
         </span>
         {{#siteName}}{{siteName}}{{/siteName}}
       </span>
-      <img src="{{image}}" onclick="showEntry(event, '{{url}}')"/>
+      <div class="image" style="background-image: url({{image}})" onclick="showEntry(event, '{{url}}')"/>
       <span class="overlay bottom title">{{title}}</span>
     </div>
   </div>
