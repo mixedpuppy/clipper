@@ -14,7 +14,7 @@
   <script>
   $(document).ready(function() {
     remoteStorage.access.claim('clips', 'rw');
-    remoteStorage.clips.init();
+    remoteStorage.clips.init('FLUSH');
   });
 
   function parseUrl(url) {
@@ -73,7 +73,6 @@
           }
         }
         previews[d.image] = d;
-        //$("#carousel-chooser").append($("#product-detail-tmpl").mustache(d));
       }
     }
 
@@ -87,7 +86,6 @@
           image: shareData.previews[i],
         };
         previews[d.image] = d;
-        //$("#carousel-chooser").append($("#page-detail-tmpl").mustache(d));
       }
     }
     if (shareData["og:image"]) {
@@ -97,7 +95,6 @@
         image: shareData["og:image"]
       };
       previews[d.image] = d;
-      //$("#carousel-chooser").append($("#page-detail-tmpl").mustache(d));
     }
 
     var previewData = [previews[d] for (d in previews)];
@@ -115,20 +112,15 @@
     // get the choosen item
     var image = $(".cycle-slide-active").attr("image");
     shareData.data = previews[image];
-    //// store into localstorage, and set the mark
-    //var items = localStorage["cart"];
-    //if (items) {
-    //  items = JSON.parse(items);
-    //} else {
-    //  items = [];
-    //}
-    //items.push(shareData);
-    //localStorage["cart"] = JSON.stringify(items);
-    remoteStorage.clips.add(shareData);
-    socialMarkUpdate(true);
+    $("#content").addClass("saving");
+    remoteStorage.clips.add(shareData).then(function() {
+      socialMarkUpdate(true);
 
-    $("#content").addClass("saved");
-    window.setTimeout(function() { window.close() }, 1000);
+      $("#content").toggleClass("saving");
+      $("#content").addClass("saved");
+      localStorage["refresh"] = true;
+      window.setTimeout(function() { window.close() }, 1000);
+    });
   }
   
   function toggleHidden(e) {
@@ -167,8 +159,10 @@
       </div>
       <div id="site-detail"></div>
 
-      <div id="saved">
-        <h1 class="label label-success"><img src="clipper.png" width="64" height="64"/> Saved! </h1>
+      <div id="message">
+        <h1 class="label label-success"><img src="clipper.png" width="64" height="64"/>Saved!</h1>
+        <h1 class="label label-info"><img src="clipper.png" width="64" height="64"/>Saving...</h1>
+        <h1 class="label label-danger"><img src="clipper.png" width="64" height="64"/>Error occured wile saving.</h1>
       </div>
     </div>
 

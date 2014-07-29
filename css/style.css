@@ -3,16 +3,44 @@
   padding: 0;
 }
 
+:focus {
+  outline: none;
+}
+
 body {
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 500;
   word-spacing: 2px;
   color: #333;
-  padding: 10px 80px 40px;
-  margin-top: -20px;
+  margin-top: 70px;
+  padding: 0 80px 40px;
 /*  background: #fff url('../i/stalactite.png') top right no-repeat;*/
 }
 
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 4px 30px;
+  background-color: white;
+  box-shadow: 0 0 4px 2px #ccc;
+  z-index: 5000;
+}
+
+.header #buttons {
+  float: right;
+  vertical-align: bottom;
+  padding-top: 5px;
+}
+
+body > #remotestorage-widget {
+  top: 4px;
+  right: 150px;
+}
+.featherlight {
+  z-index: 100000;
+}
 /* featherlight overrides */
 .fixwidth {
   background: rgba(256,256,256, 0.8);
@@ -20,7 +48,8 @@ body {
 }
 .fixwidth .featherlight-content {
   width: 80%;
-  max-height: 80%;
+  /*max-height: 80%;*/
+  max-height: 600px;
   padding: 0 20px;
   margin: 0;
   border-bottom: 0;
@@ -34,23 +63,26 @@ body {
   background: #333;
 }
 .fixwidth .featherlight-inner {
-  max-height: 80%;
+  /*max-height: 80%;*/
 }
 
 .product-detail {
-  
+  height: 100%;
 }
 .product-detail > div:first-child {
   float: right;
-  max-width: 50%;
+  width: 50%;
   padding-left: 10px;
 }
 .product-div {
   max-width: 50%;
 }
-.product-div > img {
-  max-height: 500px;
-  max-width: 90%;
+.product-detail > .image {
+  height: 100%;
+  max-width: 40%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
 }
 .product-detail .lead {
   position: relative;
@@ -135,13 +167,14 @@ footer, .section {
 }
 .product-entry {
   /*border: 1px solid red;*/
+  float: left;
 }
 .product-entry > .item {
   position: relative;
   margin: 10px;
   padding: 0;
   border-radius: 4px;
-  box-shadow: 0 0 4px 5px #ccc;
+  box-shadow: 0 0 4px 2px #ccc;
   border: thin solid #aaa;
   overflow: hidden;
 }
@@ -167,12 +200,13 @@ footer, .section {
   opacity: 1;
   color: black;
 }
-.item > img {
+.item > .image {
   width: 100%;
-  max-height: 500px;
-  min-height: 150px;
-  min-width: 150px;
+  height: 200px;
   cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
 }
 
 .item .overlay {

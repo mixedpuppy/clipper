@@ -11,7 +11,6 @@
   <link href="css/style.css" media="screen" rel="stylesheet" type="text/css" />
 
   <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
-  <script src="js/jquery.stalactite.min.js" type="text/javascript"></script> 
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
   <script src="js/featherlight.min.js" type="application/javascript"></script>
   <script src="js/bootstrap.min.js" type="application/javascript"></script>
@@ -25,81 +24,19 @@
         return a;
     }
 
-    function getItems() {
-      remoteStorage.clips.list().then(function(item) {
-      dump("clip: "+JSON.stringify(item)+"\n");
+    function refresh() {
+      $('#cart-stream').empty();
+      remoteStorage.clips.list().then(function(entries) {
+        for (var url in entries) {
+          var entry = entries[url];
+          addEntry(entry);
+
+          $("#intro").css("display", "none");
+          $("#buttons").css("display", "block");
+        }
       });
-      //localStorage["cart"];
-      dump("clips: "+JSON.stringify(items)+"\n");
-      for (var i in items) {
-        dump("i: "+i+"\n");
-      }
-      //if (items) {
-      //  items = JSON.parse(items);
-      //} else {
-      //  items = [];
-      //}
-      return items;
-    }
+    };
 
-    function updateLoader(callback) {
-      setTimeout(function() {
-        $('.stalactite-loader')
-          .css({
-            position: 'fixed',
-            background: '#fff',
-            padding: '20px 20px 15px 20px',
-            top: 0,
-            left: 0
-          });
-          if (callback) {
-            callback.call(this);
-          }
-      }, 1);
-    }
-
-      function reflow() {
-
-        var cart = $('#cart-stream');
-        cart.stalactite({
-          fluid: true
-        });
-        updateLoader(function() {
-          cart.fadeIn();
-        });
-
-        // get data from localstorage and fill in our river
-        //var items = getItems();
-        //$("#intro2").css("display", "none");
-        //if (items.length) {
-          $("#intro").css("display", "none");
-          $("#buttons").css("display", "block");
-        //} else {
-        //  $("#intro").css("display", "block");
-        //  $("#buttons").css("display", "none");
-        //}
-      }
-      function refresh() {
-        var cart = $('#cart-stream');
-        cart.empty();
-        remoteStorage.clips.list().then(function(entries) {
-          for (var url in entries) {
-            var entry = entries[url];
-            addEntry(entry);
-          }
-          cart.stalactite({
-            fluid: true
-          });
-          updateLoader(function() {
-            cart.fadeIn();
-          });
-          $("#intro").css("display", "none");
-          $("#buttons").css("display", "block");
-        });
-        //$("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
-
-      };
-  
     function addEntry(entry) {
       //dump("got "+entry.key+"\n");
       var data = entry.data || entry;
@@ -114,36 +51,12 @@
       $('#cart-stream').prepend(h);
     }
 
-    function showButtons(e) {
-      if (e.style.display == "none") {
-        e.style.display = "block";
-      } else {
-        e.style.display = "none";
-      }
-    }
-    
     function clearStorage() {
-      //localStorage["cart"] = "";
-      reflow();
-    }
-    
-    function getEntry(url) {
-      var items = getItems();
-      for (var i in items) {
-        var entry = items[i];
-        if (entry.url == url) {
-          return [entry, i];
-        }
-      }
+      remoteStorage.reset();
     }
 
     function clearEntry(id) {
       remoteStorage.clips.remove(id);
-      //var items = getItems();
-      //var [entry, i] = getEntry(url);
-      //items.splice(i, 1);
-      //localStorage["cart"] = JSON.stringify(items);
-      //reflow();
     }
 
     function getData(data) {
@@ -178,14 +91,14 @@
       }      
     }
 
-    function showEntry(event, key) {
+    function showEntry(event, key, url) {
       if (event.metaKey) {
         window.open(url, "_blank");
         return;
       }
       remoteStorage.clips.get(key).then(function(entry) {
-        //var [entry, i] = getEntry(url);
         dump("showing entry "+JSON.stringify(entry)+"\n");
+        $(".lightbox").css("height", window.innerHeight * .8);
         getData(entry);
         var modal = $('#detailModal');
         modal.empty();
@@ -226,29 +139,48 @@
     }
     //]]>
 
-
-$(document).ready(function() {
-  remoteStorage.access.claim('clips', 'rw');
-  remoteStorage.clips.init();
-  refresh();
-  remoteStorage.displayWidget();
-  remoteStorage.clips.on('change', function(event) {
-    console.log('change from '+event.origin, event);
-    // add
-    if(event.newValue && (! event.oldValue)) {
-      console.log('**** add entry '+event.relativePath, event.newValue.key);
-      $("#intro").css("display", "none");
-      $("#buttons").css("display", "block");
-      addEntry(event.newValue);
+  
+  $(document).ready(function() {    
+    delete localStorage["refresh"];
+  
+    remoteStorage.access.claim('clips', 'rw');
+    remoteStorage.clips.init();
+  
+    if (remoteStorage.connected || localStorage["enableRemoteStorage"]) {
+      remoteStorage.displayWidget();
     }
-    // remove
-    else if((! event.newValue) && event.oldValue) {
-      console.log('!!!! try to remove an entry '+event.oldValue.key);
-      $("#"+event.oldValue.key).remove();
-      console.log('**** remove entry '+event.relativePath, event.oldValue.key);
-    }
+    remoteStorage.clips.on('change', function(event) {
+      console.log('change from '+event.origin, event);
+      if (event.oldValue) {
+        var el = $("#"+event.oldValue.key);
+        if (el) {
+          console.log('**** remove entry '+event.relativePath, event.oldValue.key);
+          el.remove();
+        }
+      }
+      if (event.newValue && !document.getElementById("#"+event.newValue.key)) {
+        console.log('**** add entry '+event.relativePath, event.newValue.key);
+        $("#intro").css("display", "none");
+        $("#buttons").css("display", "block");
+        addEntry(event.newValue);
+      }
+    });
+    remoteStorage.on('disconnected', function() {
+        console.log('**** disconnected');
+      //if (RemoteStorage.config.disconnectClear)
+        $('#cart-stream').empty();
+    });
   });
-});
+
+  window.addEventListener("storage", function(event) {
+    dump("**** window storage event "+event.key+"\n");
+    console.log(event);
+    if (event.key == "refresh") {
+      refresh();
+      delete localStorage["refresh"];
+    }
+  }, true);
+
   </script>
 
   
@@ -269,15 +201,16 @@ $(document).ready(function() {
 </head>
 <body>
 
-  <div class="container_9 section">
-    <div id="buttons" style="float: right; vertical-align: bottom; padding-top: 5px; padding-right: 10px;">
-      <button class="btn btn-sm glyphicon glyphicon-refresh" onclick="refresh()" title="refresh clip list"></button>
-      <button class="btn btn-sm glyphicon glyphicon-ban-circle" onclick="clearStorage(this)" title="empty all clips"></button>
-      <button class="btn btn-sm glyphicon glyphicon-download" onclick="activate(this)" title="activate clipper"></button>
+  <div class="header" role="navigation">
+    <div id="buttons">
+      <button class="btn btn-default btn-sm glyphicon glyphicon-refresh" onclick="refresh()" title="refresh clip list"></button>
+      <button class="btn btn-default btn-sm glyphicon glyphicon-ban-circle" onclick="clearStorage(this)" title="empty all clips"></button>
+      <button class="btn btn-default btn-sm glyphicon glyphicon-download" onclick="activate(this)" title="activate clipper"></button>
     </div>
-    <h1>clipper <img src="clipper.png" width="64" height="64"/></h1>
+    
+    <span style="font-size: 2em">clipper <img src="clipper.png" width="32" height="32"/></span>
   </div>
-  <div id="intro" class="container_9 content">
+  <div id="intro" class="container content">
     <div>
       <span style="width:240px; float: right;">
         <center>
@@ -286,18 +219,20 @@ $(document).ready(function() {
           <span class="mute">Activate Now!</span>
         </center>
       </span>
-      <h2 class="slogan grid6">
+      <h2 class="lead">
         A simple rich element clipper service.  This service runs entirely in
-        your web browser, no data is stored on the server, it's kept private
-        and secure on your system.  Just activate the service, then as you
-        browse the web, you can save clips to this page using the clip button
-        found in the toolbar.
+        your web browser, no data is stored on the server unless you choose to
+        use remote storage, it's kept private and secure on your system. Just
+        activate the service, then as you browse the web, you can save clips to
+        this page using the clip button found in the toolbar.
       </h2>
     </div>
   </div>
-  <div id="intro2" class="container_9 content" style="display: none">
-    <h2 class="slogan grid6">
-      Now you can browse the web and save stuff into clipper.  Try looking at products on <a href="https://www.ebay.com">ebay</a> or <a href="https://www.guilt.com">guilt.com</a>!
+  <div id="intro2" class="content" style="display: none">
+    <h2 class="lead">
+      Now you can browse the web and save stuff into clipper. Try looking at
+      products on <a href="https://www.ebay.com">ebay</a> or <a
+      href="https://www.guilt.com">guilt.com</a>!
     </h2>
   </div>
   <div id="cart-stream" class="content container_9 active"></div>
@@ -313,8 +248,7 @@ $(document).ready(function() {
       {{#price}}<span>Price: {{price}}</span>{{/price}}
       <p class="lead">{{description}}<span class="after"></span></p>
     </div>
-    <div class="product-div">
-      <img src="{{data.image}}"/>
+    <div class="image" style="background-image: url({{data.image}})">
     </div>
     <div class="clearfix"></div>
   </div>
@@ -344,7 +278,7 @@ $(document).ready(function() {
         </span>
         {{#siteName}}{{siteName}}{{/siteName}}
       </span>
-      <img src="{{image}}" onclick="showEntry(event, '{{key}}')"/>
+      <div class="image" style="background-image: url({{image}})" onclick="showEntry(event, '{{key}}', '{{url}}')"/>
       <span class="overlay bottom title">{{title}}</span>
     </div>
   </div>

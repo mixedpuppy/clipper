@@ -7,8 +7,8 @@ RemoteStorage.defineModule('clips', function(privateClient) {
   return {
     exports: {
 
-      init: function() {
-        privateClient.cache('');
+      init: function(strategy) {
+        privateClient.cache(strategy || "");
       },
 
       on: privateClient.on,
@@ -40,6 +40,7 @@ RemoteStorage.config.changeEvents = {
   remote: true,
   conflict: true
 };
+RemoteStorage.config.disconnectClear = false;
 
 remoteStorage.setApiKeys('googledrive', {
   client_id: '122384013929-st9tlnkl6di0b24iakvb803sugbb5tvf.apps.googleusercontent.com'
