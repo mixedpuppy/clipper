@@ -341,6 +341,7 @@
 
   RemoteStorage.config = {
     logging: false,
+    disconnectClear: true,
     changeEvents: {
       local:    true,
       window:   false,
@@ -2222,14 +2223,20 @@ RemoteStorage.Assets = {
     return function(error) {
       if (error instanceof RemoteStorage.DiscoveryError) {
         console.error('Discovery failed', error, '"' + error.message + '"');
-        widget.view.setState('initial', [error.message]);
+        if (widget.view)
+          widget.view.setState('initial', [error.message]);
       } else if (error instanceof RemoteStorage.SyncError) {
-        widget.view.setState('offline', []);
+        console.error('SyncError ', error, '"' + error.message + '"');
+        if (widget.view)
+          widget.view.setState('offline', []);
       } else if (error instanceof RemoteStorage.Unauthorized) {
-        widget.view.setState('unauthorized');
+        console.error('unauthorized ', error, '"' + error.message + '"');
+        if (widget.view)
+          widget.view.setState('unauthorized');
       } else {
         RemoteStorage.log('[Widget] Unknown error');
-        widget.view.setState('error', [error]);
+        if (widget.view)
+          widget.view.setState('error', [error]);
       }
     };
   }
@@ -6660,13 +6667,17 @@ Math.uuid = function (len, radix) {
   RS.IndexedDB._rs_cleanup = function(remoteStorage) {
     var promise = promising();
 
-    if (remoteStorage.local) {
-      remoteStorage.local.closeDB();
-    }
-
-    RS.IndexedDB.clean(DEFAULT_DB_NAME, function() {
+    if (RemoteStorage.config.disconnectClear) {
+      if (remoteStorage.local) {
+        remoteStorage.local.closeDB();
+      }
+  
+      RS.IndexedDB.clean(DEFAULT_DB_NAME, function() {
+        promise.fulfill();
+      });
+    } else {
       promise.fulfill();
-    });
+    }
 
     return promise;
   };
@@ -6796,6 +6807,8 @@ Math.uuid = function (len, radix) {
 
   // TODO tests missing!
   RemoteStorage.LocalStorage._rs_cleanup = function() {
+    if (!RemoteStorage.config.disconnectClear)
+      return;
     var keys = [];
 
     for (var i=0; i<localStorage.length; i++) {
@@ -7246,6 +7259,8 @@ Math.uuid = function (len, radix) {
   var GD_DIR_MIME_TYPE = 'application/vnd.google-apps.folder';
   var RS_DIR_MIME_TYPE = 'application/json; charset=UTF-8';
 
+  var SETTINGS_KEY = 'remotestorage:googledrive';
+
   function buildQueryString(params) {
     return Object.keys(params).map(function(key) {
       return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
@@ -7298,33 +7313,62 @@ Math.uuid = function (len, radix) {
 
   RS.GoogleDrive = function(remoteStorage, clientId) {
 
-    RS.eventHandling(this, 'change', 'connected', 'wire-busy', 'wire-done', 'not-connected');
+    RS.eventHandling(this, 'change', 'connecting', 'connected', 'wire-busy', 'wire-done', 'not-connected');
 
     this.rs = remoteStorage;
     this.clientId = clientId;
 
+    var settings;
+    try {
+      settings = JSON.parse(localStorage[SETTINGS_KEY]);
+    } catch(e){}
+    if (settings) {
+      this.configure(settings.userAddress, undefined, undefined, settings.token);
+    }
+
+
     this._fileIdCache = new Cache(60 * 5); // ids expire after 5 minutes (is this a good idea?)
+    if (this.connected) {
+      var self = this;
+      setTimeout(function() {
+        self._emit.bind(this)
+        self.rs._emit('connected');
+      }, 0, 'connected');
+    }
   };
 
   RS.GoogleDrive.prototype = {
     connected: false,
     online: true,
 
-    configure: function(_x, _y, _z, token) { // parameter list compatible with WireClient
+    configure: function(userAddress, _y, _z, token) { // parameter list compatible with WireClient
+      console.log("[GoogleDrive] configure ", userAddress, _y, _z, token);
       if (token) {
-        localStorage['remotestorage:googledrive:token'] = token;
-        this.token = token;
         this.connected = true;
-        this._emit('connected');
+        this.token = token;
+        this.userAddress = userAddress;
+        if (!userAddress) {
+          this.info().then(function(info){
+            console.log("[GoogleDrive] configure ", info)
+            this.userAddress = info.user.emailAddress;
+            localStorage[SETTINGS_KEY] = JSON.stringify( { token: this.token,
+                                                            userAddress: this.userAddress,
+                                                            account: info } );
+            this._emit('connected');
+          }.bind(this));
+        } else {
+          this._emit('connected');
+        }
       } else {
         this.connected = false;
         delete this.token;
-        delete localStorage['remotestorage:googledrive:token'];
+        delete localStorage[SETTINGS_KEY];
       }
     },
 
     connect: function() {
       this.rs.setBackend('googledrive');
+      this.rs._emit('connecting');
       RS.Authorize(AUTH_URL, AUTH_SCOPE, String(RS.Authorize.getLocation()), this.clientId);
     },
 
@@ -7332,6 +7376,28 @@ Math.uuid = function (len, radix) {
       if (!this.connected) {
         this._emit('not-connected');
       }
+    },
+
+    /**
+     * Method : info()
+     **/
+    info: function() {
+      var url = BASE_URL + '/drive/v2/about';
+      var promise = promising();
+      // requesting user info(mainly for userAdress)
+      this._request('GET', url, {}, function(err, resp){
+        if (err) {
+          promise.reject(err);
+        } else {
+          try {
+            var info = JSON.parse(resp.responseText);
+            promise.fulfill(info);
+          } catch(e) {
+            promise.reject(err);
+          }
+        }
+      });
+      return promise;
     },
 
     get: function(path, options) {
@@ -7709,6 +7775,7 @@ Math.uuid = function (len, radix) {
       remoteStorage.remote = remoteStorage._origRemote;
       delete remoteStorage._origRemote;
     }
+    delete localStorage[SETTINGS_KEY];
   };
 
 })(this);
@@ -7865,7 +7932,7 @@ Math.uuid = function (len, radix) {
       }
     };
 
-    RS.eventHandling(this, 'change', 'connected', 'wire-busy', 'wire-done', 'not-connected');
+    RS.eventHandling(this, 'change', 'connecting', 'connected', 'wire-busy', 'wire-done', 'not-connected');
     rs.on('error', onErrorCb);
 
     this.clientId = rs.apiKeys.dropbox.api_key;
@@ -7886,7 +7953,10 @@ Math.uuid = function (len, radix) {
       } catch(e) {  }
     }
     if (this.connected) {
-      setTimeout(this._emit.bind(this), 0, 'connected');
+      setTimeout(function() {
+        self._emit.bind(this)
+        self.rs._emit('connected');
+      }, 0, 'connected');
     }
   };
 
@@ -7902,7 +7972,10 @@ Math.uuid = function (len, radix) {
     connect: function() {
       //ToDo handling when token is already present
       this.rs.setBackend('dropbox');
+      this.rs._emit('connecting');
       if (this.token){
+        this._emit('connected');
+        this.rs._emit('connected');
         hookIt(this.rs);
       } else {
         RS.Authorize(AUTH_URL, '', String(RS.Authorize.getLocation()), this.clientId);
@@ -7916,16 +7989,24 @@ Math.uuid = function (len, radix) {
     configure: function(userAddress, href, storageApi, token) {
       if (typeof token !== 'undefined') { this.token = token; }
       if (typeof userAddress !== 'undefined') { this.userAddress = userAddress; }
-
       if (this.token) {
         this.connected = true;
         if ( !this.userAddress ){
           this.info().then(function(info){
-            this.userAddress = info.display_name;
-            //FIXME propagate this to the view
+            console.log("[Dropbox] user ", info);
+            this.userAddress = info.email;
+            if (hasLocalStorage){
+              localStorage[SETTINGS_KEY] = JSON.stringify( { token: this.token,
+                                                             userAddress: this.userAddress,
+                                                             account: info } );
+            }
+            this._emit('connected');
+            this.rs._emit('connected');
           }.bind(this));
+        } else {
+          this._emit('connected');
+          this.rs._emit('connected');
         }
-        this._emit('connected');
       } else {
         this.connected = false;
       }
