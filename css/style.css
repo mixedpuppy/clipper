@@ -37,6 +37,7 @@ body {
 body > #remotestorage-widget {
   top: 4px;
   right: 150px;
+  position: fixed;
 }
 .featherlight {
   z-index: 100000;
@@ -250,10 +251,10 @@ footer, .section {
 }
 
 /* share dropdown panel */
-.item .dropdown-menu {
+.dropdown-menu {
   margin-top: 6px;
 }
-.item .dropdown-menu:after {
+.dropdown-menu:after {
   content: "";
   display: inline-block;
   border-left: 6px solid transparent;
@@ -265,7 +266,7 @@ footer, .section {
   right: 8px;
 }
 
-.item .dropdown-menu .btn {
+.dropdown-menu .btn {
   width: 16px;
   height: 16px;
   padding: 2px;

@@ -5054,7 +5054,7 @@ Math.uuid = function (len, radix) {
         node.common = node.remote;
         delete node.remote;
 
-        if (node.common.itemsMap) {
+        if (node.common.itemsMap && node.local.itemsMap) {
           for (var itemName in node.common.itemsMap) {
             if (!node.local.itemsMap[itemName]) {
               // Indicates the node is either newly being fetched

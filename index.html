@@ -30,7 +30,7 @@
         for (var url in entries) {
           var entry = entries[url];
           addEntry(entry);
-
+      
           $("#intro").css("display", "none");
           $("#buttons").css("display", "block");
         }
@@ -139,9 +139,22 @@
     }
     //]]>
 
+
+  function updateAdditions() {
+    if (!localStorage['cart-add'])
+      return;
+    var items = JSON.parse(localStorage['cart-add']);
+    for (var i in items) {
+      var shareData = items[i];
+      remoteStorage.clips.add(shareData);
+    };
+    delete localStorage["cart-add"];
+  }
+
   
-  $(document).ready(function() {    
-    delete localStorage["refresh"];
+  $(document).ready(function() {
+    if (localStorage["refresh"])
+      delete localStorage["refresh"];
   
     remoteStorage.access.claim('clips', 'rw');
     remoteStorage.clips.init();
@@ -170,12 +183,13 @@
       //if (RemoteStorage.config.disconnectClear)
         $('#cart-stream').empty();
     });
+    updateAdditions();
   });
-
   window.addEventListener("storage", function(event) {
-    dump("**** window storage event "+event.key+"\n");
-    console.log(event);
-    if (event.key == "refresh") {
+    console.log("**** window storage event", event);
+    if (event.key == "cart-add") {
+      updateAdditions();
+    } else if (event.key == "refresh") {
       refresh();
       delete localStorage["refresh"];
     }
@@ -240,6 +254,20 @@
   <div id="detailModal" class="lightbox" style="border:none;" tabindex="-1" aria-labelledby="clip details" aria-hidden="true" hidden="true"></div>
 
 <script id="product-modal-tmpl" type="text/x-jquery-tmpl">
+  {{^enableShare}}
+  <span class="dropdown" style="float: right; position: relative">
+    <span class="btn glyphicon glyphicon-send share-btn" id="drop1" role="button" data-toggle="dropdown" href="#"></span>
+    <div class="dropdown-menu pull-right" style="padding:4px;">
+      <span class="btn facebook-icon" onclick="openShare('https://www.facebook.com/sharer/sharer.php?u={{url}}');"></span>
+      <span class="btn twitter-icon" onclick="openShare('https://twitter.com/intent/tweet?url={{url}}');"></span>
+      <span class="btn gplus-icon" onclick="openShare('https://plus.google.com/share?url={{url}}');"></span>
+      <span class="btn linkedin-icon" onclick="openShare('https://www.linkedin.com/shareArticle?mini=true&url={{url}}');"></span>
+      <span class="btn weibo-icon" onclick="openShare('http://service.weibo.com/share/share.php?url={{url}}');"></span>
+      <span class="btn mixi-icon" onclick="openShare('https://mixi.jp/share.pl?u={{url}}');"></span>
+      <span class="btn vk-icon" onclick="openShare('https://vk.com/share.php?url={{url}}');"></span>
+    </div>
+  </span>
+  {{/enableShare}}
   {{#enableShare}}<span class="btn glyphicon glyphicon-send share-btn" onclick="startActivity({url: '{{url}}'}); event.stopPropagation();"></span>{{/enableShare}}
   <div class="product-detail">
     <div class="product-div">

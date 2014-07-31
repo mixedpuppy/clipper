@@ -14,7 +14,7 @@
   <script>
   $(document).ready(function() {
     remoteStorage.access.claim('clips', 'rw');
-    remoteStorage.clips.init('FLUSH');
+    remoteStorage.clips.init();
   });
 
   function parseUrl(url) {
@@ -113,9 +113,23 @@
     var image = $(".cycle-slide-active").attr("image");
     shareData.data = previews[image];
     $("#content").addClass("saving");
+
+    // store into localstorage, and set the mark
+    //var items = localStorage["cart-add"];
+    //if (items) {
+    //  items = JSON.parse(items);
+    //} else {
+    //  items = [];
+    //}
+    //items.push(shareData);
+    //localStorage["cart-add"] = JSON.stringify(items);
+    //$("#content").toggleClass("saving");
+    //$("#content").toggleClass("saved");
+    //window.setTimeout(function() { window.close() }, 1000);
+    
     remoteStorage.clips.add(shareData).then(function() {
       socialMarkUpdate(true);
-
+    
       $("#content").toggleClass("saving");
       $("#content").addClass("saved");
       localStorage["refresh"] = true;
@@ -195,12 +209,14 @@
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   {{#list}}
-  <div class="item product" style='background-image: url("{{image}}");' image="{{image}}">
-    <div class="details">
-    <span class="lead">{{name}}</span><br/>
-    {{#price}}<span>{{.}}</span>{{/price}}
+    {{#image}}
+    <div class="item product" style='background-image: url("{{.}}");' image="{{.}}">
+      <div class="details">
+      <span class="lead">{{name}}</span><br/>
+      {{#price}}<span>{{.}}</span>{{/price}}
+      </div>
     </div>
-  </div>
+    {{/image}}
   {{/list}}
 </script>
 
