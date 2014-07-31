@@ -72,7 +72,11 @@
             d.price = properties.offerDetails[0].properties.price;
           }
         }
-        previews[d.image] = d;
+        for (var img in properties.image) {
+          d.image = properties.image[img]
+          previews[d.image] = d;
+          console.log("image: "+d.image);
+        }
       }
     }
 
@@ -86,6 +90,7 @@
           image: shareData.previews[i],
         };
         previews[d.image] = d;
+          console.log("image: "+d.image);
       }
     }
     if (shareData["og:image"]) {
@@ -95,6 +100,7 @@
         image: shareData["og:image"]
       };
       previews[d.image] = d;
+          console.log("image: "+d.image);
     }
 
     var previewData = [previews[d] for (d in previews)];
@@ -209,14 +215,12 @@
 
 <script id="product-detail-tmpl" type="text/x-jquery-tmpl">
   {{#list}}
-    {{#image}}
-    <div class="item product" style='background-image: url("{{.}}");' image="{{.}}">
-      <div class="details">
-      <span class="lead">{{name}}</span><br/>
-      {{#price}}<span>{{.}}</span>{{/price}}
-      </div>
+  <div class="item product" style='background-image: url("{{image}}");' image="{{image}}">
+    <div class="details">
+    <span class="lead">{{name}}</span><br/>
+    {{#price}}<span>{{.}}</span>{{/price}}
     </div>
-    {{/image}}
+  </div>
   {{/list}}
 </script>
 
