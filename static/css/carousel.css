@@ -20,7 +20,7 @@ body {
   border-radius: 4px;
   height: 300px;
   width: 100%;
-  background-image: url(/nocamera.png);
+  background-image: url(/images/nocamera.png);
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -135,7 +135,7 @@ body {
 }
 
 .scissors {
-  background-image: url(/clipper.png);
+  background-image: url(/images/clipper.png);
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 16px;

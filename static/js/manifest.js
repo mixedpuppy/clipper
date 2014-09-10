@@ -7,14 +7,14 @@ function getManifest() {
     "name": "Clipper",
     "origin": baseurl,
     // icons from http://findicons.com/icon/158311/firefox?id=356182 by ipapun
-    "iconURL": baseurl+"/clipper.png",
-    "icon32URL": baseurl+"/clipper.png",
-    "icon64URL": baseurl+"/clipper.png",
+    "iconURL": baseurl+"/images/clipper.png",
+    "icon32URL": baseurl+"/images/clipper.png",
+    "icon64URL": baseurl+"/images/clipper.png",
   
     // at least one of these must be defined
     "markURL": baseurl+"/status.htm",
-    "markedIcon": baseurl+"/checked32.png",
-    "unmarkedIcon": baseurl+"/unchecked32.png",
+    "markedIcon": baseurl+"/images/checked32.png",
+    "unmarkedIcon": baseurl+"/images/unchecked32.png",
   
     // should be available for display purposes
     "description": "Clip rich data from the web and save it in your browser",
