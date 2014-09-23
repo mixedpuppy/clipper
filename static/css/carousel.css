@@ -20,6 +20,15 @@ body {
   border-radius: 4px;
   height: 300px;
   width: 100%;
+}
+
+.carousel.loading {
+  background-image: url(/images/loading.gif);
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.carousel.noimage {
   background-image: url(/images/nocamera.png);
   background-repeat: no-repeat;
   background-position: center center;

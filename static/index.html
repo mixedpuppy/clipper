@@ -10,14 +10,17 @@
   <link href="css/featherlight.min.css" type="text/css" rel="stylesheet" title="Featherlight Styles" />
   <link href="css/style.css" media="screen" rel="stylesheet" type="text/css" />
 
-  <script src="js/jquery-1.11.1.min.js" type="text/javascript"></script>
+  <script src="js/jquery-1.11.1.min.js" type="application/javascript"></script>
   <script src="js/jquery.mustache.js" type="application/javascript"></script>
   <script src="js/featherlight.min.js" type="application/javascript"></script>
   <script src="js/bootstrap.min.js" type="application/javascript"></script>
-  <script src="js/manifest.js" type="text/javascript"></script>
+  <script src="js/ebayapi.js" type="application/javascript"></script>
+  <script src="js/manifest.js" type="application/javascript"></script>
+  <script src="js/site.js" type="application/javascript"></script>
 
-  <script type="text/javascript">
+  <script type="application/javascript">
     //<![CDATA[
+
     function parseUrl(url) {
         var a = document.createElement('a');
         a.href = url;
@@ -26,6 +29,7 @@
 
     function refresh() {
       $('#cart-stream').empty();
+      var prodIds = {};
       remoteStorage.clips.list().then(function(entries) {
         for (var url in entries) {
           var entry = entries[url];
@@ -33,13 +37,27 @@
       
           $("#intro").css("display", "none");
           $("#buttons").css("display", "block");
+          var driver = getSiteDriver(entry.siteName);
+          if (driver) {
+            if (!prodIds[driver.name]) {
+              prodIds[driver.name] = [];
+            }
+            prodIds[driver.name].push(driver.parseURL(entry.url));
+          }
+        }
+        console.log(prodIds);
+        for (var site in prodIds) {
+          console.log("***** prodIdSite "+site+"\n");
+          drivers[site].getItems(prodIds[site], null, function(response) {
+            console.log(response);
+          })
         }
       });
     };
 
     function addEntry(entry) {
       //dump("got "+entry.key+"\n");
-      console.log(entry);
+      //console.log(entry);
       var data = entry.data || entry;
       var h = $("#product-detail-tmpl").mustache({
         key: entry.key,
@@ -60,53 +78,23 @@
       remoteStorage.clips.remove(id);
     }
 
-    function getData(data) {
-      if (data.microdata && data.microdata.items.length) {
-        for (var i in data.microdata.items) {
-          var item = data.microdata.items[i];
-          var properties = item.properties;
-          if (item.types.indexOf("http://schema.org/Product") >= 0) {
-            if (properties.name) {
-              data.name = properties.name;
-            }
-            if (properties.image) {
-              data.image = properties.image;
-            }
-            if (properties.offers && properties.offers.length) {
-              data.price = properties.offers[0].properties.price;
-            }
-          } else
-          if (types.indexOf("http://data-vocabulary.org/Product") >= 0) {
-            if (properties.name) {
-              data.name = properties.name;
-            }
-            if (properties.image) {
-              data.image = properties.image[0];
-            }
-            if (properties.offerDetails && properties.offerDetails.length) {
-              data.price = properties.offerDetails[0].properties.price;
-            }
-          }
-          //$("#carousel-chooser").append($("#product-detail-tmpl").mustache(d));
-        }
-      }      
-    }
-
     function showEntry(event, key, url) {
       if (event.metaKey) {
         window.open(url, "_blank");
         return;
       }
       remoteStorage.clips.get(key).then(function(entry) {
-        dump("showing entry "+JSON.stringify(entry)+"\n");
+        //dump("showing entry "+JSON.stringify(entry)+"\n");
         $(".lightbox").css("height", window.innerHeight * .8);
         getData(entry);
+        entry.driver = getSiteDriver(entry.siteName);
         var modal = $('#detailModal');
         modal.empty();
         entry.enableShare = !!window.MozActivity;
         var h = $("#product-modal-tmpl").mustache(entry);
         modal.append(h);
         $.featherlight('#detailModal', { variant: "fixwidth" });
+        delete entry.driver;
       });
 
     }
@@ -170,16 +158,16 @@
       remoteStorage.displayWidget();
     }
     remoteStorage.clips.on('change', function(event) {
-      console.log('change from '+event.origin, event);
+      //console.log('change from '+event.origin, event);
       if (event.oldValue) {
         var el = $("#"+event.oldValue.key);
         if (el) {
-          console.log('**** remove entry '+event.relativePath, event.oldValue.key);
+          //console.log('**** remove entry '+event.relativePath, event.oldValue.key);
           el.remove();
         }
       }
       if (event.newValue && !document.getElementById("#"+event.newValue.key)) {
-        console.log('**** add entry '+event.relativePath, event.newValue.key);
+        //console.log('**** add entry '+event.relativePath, event.newValue.key);
         $("#intro").css("display", "none");
         $("#buttons").css("display", "block");
         addEntry(event.newValue);
@@ -285,6 +273,16 @@
       <a href="{{url}}" target="_blank">{{#siteName}}{{siteName}}{{/siteName}}{{^siteName}}{{url}}{{/siteName}}</a>
       {{#price}}<span>Price: {{price}}</span>{{/price}}
       <p class="lead">{{description}}<span class="after"></span></p>
+      {{#widget}}{{{widget}}}{{/widget}}
+      {{#buyURL}}
+      <button id="buynow" onclick="window.open('{{buyURL}}')">Buy Now</button>
+      {{/buyURL}}
+      {{#cartURL}}
+      <button id="cartadd" onclick="window.open('{{cartURL}}')">Add to Cart</button>
+      {{/cartURL}}
+      {{#makeOffer}}
+      <button id="makeOffer" onclick="window.open('{{makeOffer}}')">Make Offer</button>
+      {{/makeOffer}}
     </div>
     <div class="image" style="background-image: url({{data.image}})">
     </div>

@@ -33,7 +33,7 @@ RemoteStorage.defineModule('clips', function(privateClient) {
 
 });
 
-RemoteStorage.config.logging = true;
+RemoteStorage.config.logging = false;
 RemoteStorage.config.changeEvents = {
   local: true,
   window: true,

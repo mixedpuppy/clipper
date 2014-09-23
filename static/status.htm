@@ -9,19 +9,16 @@
   <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
   <script src="js/jquery.cycle2.center.js" type="application/javascript"></script>
   <script src="js/remotestorage.js" type="application/javascript"></script>
+  <script src="js/ebayapi.js" type="application/javascript"></script>
   <script src="js/storage.js" type="application/javascript"></script>
+  <script src="js/site.js" type="text/javascript"></script>
 
-  <script>
+  <script type="text/javascript">
   $(document).ready(function() {
     remoteStorage.access.claim('clips', 'rw');
     remoteStorage.clips.init();
   });
 
-  function parseUrl(url) {
-      var a = document.createElement('a');
-      a.href = url;
-      return a;
-  }
 
   function socialMarkUpdate(isMarked) {
     try {
@@ -33,85 +30,35 @@
     }
   }
   var shareData, previews = {};
-  function setData(data) {
-    //dump("******** got OpenGraphData event! "+data+"\n");
-    shareData = JSON.parse(data);
+
+  function handleOpenGraphData() {
     if (!shareData.siteName) {
       shareData.siteName = parseUrl(shareData.url).host;
     }
     $("#site-detail").empty();
     $("#site-detail").html($("#site-detail-tmpl").mustache(shareData));
+    //setData(shareData);
+    //console.log(shareData);
 
-    if (shareData.microdata && shareData.microdata.items.length) {
-      for (var i in shareData.microdata.items) {
-        var item = shareData.microdata.items[i];
-        var properties = item.properties;
-        var d = {
-          url: shareData.url,
-          data: item
-        };
-        if (item.types.indexOf("http://schema.org/Product") >= 0) {
-          if (properties.name) {
-            d.name = properties.name;
-          }
-          if (properties.image) {
-            d.image = properties.image;
-          }
-          if (properties.offers && properties.offers.length) {
-            d.price = properties.offers[0].properties.price;
-          }
-        } else
-        if (item.types.indexOf("http://data-vocabulary.org/Product") >= 0) {
-          if (properties.name) {
-            d.name = properties.name;
-          }
-          if (properties.image) {
-            d.image = properties.image;
-          }
-          if (properties.offerDetails && properties.offerDetails.length) {
-            d.price = properties.offerDetails[0].properties.price;
-          }
-        }
-        for (var img in properties.image) {
-          d.image = properties.image[img]
-          previews[d.image] = d;
-          console.log("image: "+d.image);
-        }
+    getSiteData(shareData, function() {
+      previews = getPreviewsFromData(shareData);
+      $(".carousel").toggleClass("loading");
+      var previewData = [previews[d] for (d in previews)];
+      console.log("preview images "+previewData.length);
+      if (previewData.length < 2) {
+        $(".carousel-inner span").hide();
       }
-    }
-
-    if (shareData.previews) {
-      for (var i in shareData.previews) {
-        if (!shareData.previews[i])
-          continue;
-        var d = {
-          name: shareData.title,
-          url: shareData.url,
-          image: shareData.previews[i],
-        };
-        previews[d.image] = d;
-          console.log("image: "+d.image);
+      if (previewData.length < 1) {
+        $(".carousel").toggleClass("noimage");
       }
-    }
-    if (shareData["og:image"]) {
-      var d = {
-        name: shareData.title,
-        url: shareData.url,
-        image: shareData["og:image"]
-      };
-      previews[d.image] = d;
-          console.log("image: "+d.image);
-    }
-
-    var previewData = [previews[d] for (d in previews)];
-    if (previewData.length < 2) {
-      $(".carousel-inner span").hide();
-    }
-    $("#carousel-chooser").append($("#product-detail-tmpl").mustache({list: previewData}));
-    $('#carousel-chooser').cycle();
+      $("#carousel-chooser").append($("#product-detail-tmpl").mustache({list: previewData}));
+      $('#carousel-chooser').cycle();
+    });
   }
+
   addEventListener("OpenGraphData", function(e) {
-    setData(e.detail);
+    shareData = JSON.parse(e.detail);
+    handleOpenGraphData();
   });
   
   function saveMark() {
@@ -160,7 +107,7 @@
 <body contentid="content">
   <div id="content" style="margin: 0px; padding: 0; min-height: 300px;">
     <div id="product-detail" class="clearfix">
-      <div id="carousel-promotions" class="carousel">
+      <div id="carousel-promotions" class="carousel loading">
         <div class="carousel-wrapper">
           <div id="carousel-chooser" class="carousel-inner"
             data-cycle-center-horz="true"
@@ -180,9 +127,9 @@
       <div id="site-detail"></div>
 
       <div id="message">
-        <h1 class="label label-success"><img src="clipper.png" width="64" height="64"/>Saved!</h1>
-        <h1 class="label label-info"><img src="clipper.png" width="64" height="64"/>Saving...</h1>
-        <h1 class="label label-danger"><img src="clipper.png" width="64" height="64"/>Error occured wile saving.</h1>
+        <h1 class="label label-success"><img src="/images/clipper.png" width="64" height="64"/>Saved!</h1>
+        <h1 class="label label-info"><img src="/images/clipper.png" width="64" height="64"/>Saving...</h1>
+        <h1 class="label label-danger"><img src="/images/clipper.png" width="64" height="64"/>Error occured wile saving.</h1>
       </div>
     </div>
 
