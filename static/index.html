@@ -153,8 +153,7 @@
   
     remoteStorage.access.claim('clips', 'rw');
     remoteStorage.clips.init();
-  
-    if (remoteStorage.connected || localStorage["enableRemoteStorage"]) {
+    if (1 /*|| localStorage["enableRemoteStorage"]*/) {
       remoteStorage.displayWidget();
     }
     remoteStorage.clips.on('change', function(event) {
