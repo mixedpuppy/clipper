@@ -3526,6 +3526,7 @@ module.exports = ret;
 
   RemoteStorage.config = {
     logging: false,
+    disconnectClear: true,
     changeEvents: {
       local:    true,
       window:   false,
@@ -6198,14 +6199,20 @@ RemoteStorage.Assets = {
     return function (error) {
       if (error instanceof RemoteStorage.DiscoveryError) {
         console.error('Discovery failed', error, '"' + error.message + '"');
-        widget.view.setState('initial', [error.message]);
+        if (widget.view)
+          widget.view.setState('initial', [error.message]);
       } else if (error instanceof RemoteStorage.SyncError) {
-        widget.view.setState('offline', []);
+        console.error('SyncError ', error, '"' + error.message + '"');
+        if (widget.view)
+          widget.view.setState('offline', []);
       } else if (error instanceof RemoteStorage.Unauthorized) {
-        widget.view.setState('unauthorized');
+        console.error('unauthorized ', error, '"' + error.message + '"');
+        if (widget.view)
+          widget.view.setState('unauthorized');
       } else {
         RemoteStorage.log('[Widget] Unknown error');
-        widget.view.setState('error', [error]);
+        if (widget.view)
+          widget.view.setState('error', [error]);
       }
     };
   }
@@ -11408,6 +11415,12 @@ Math.uuid = function (len, radix) {
   RS.IndexedDB._rs_cleanup = function (remoteStorage) {
     var pending = Promise.defer();
 
+    // keep local copy when disconnecting
+    if (!RemoteStorage.config.disconnectClear) {
+      pending.resolve();
+      return pending.promise;
+    }
+
     if (remoteStorage.local) {
       remoteStorage.local.closeDB();
     }
@@ -11537,6 +11550,10 @@ Math.uuid = function (len, radix) {
 
   // TODO tests missing!
   RemoteStorage.LocalStorage._rs_cleanup = function () {
+    // keep local copy when disconnecting
+    if (!RemoteStorage.config.disconnectClear)
+      return;
+
     var keys = [];
 
     for (var i = 0, len = localStorage.length; i < len; i++) {
@@ -11885,6 +11902,8 @@ Math.uuid = function (len, radix) {
   var GD_DIR_MIME_TYPE = 'application/vnd.google-apps.folder';
   var RS_DIR_MIME_TYPE = 'application/json; charset=UTF-8';
 
+  var SETTINGS_KEY = 'remotestorage:googledrive';
+
   function buildQueryString(params) {
     return Object.keys(params).map(function (key) {
       return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
@@ -11937,10 +11956,19 @@ Math.uuid = function (len, radix) {
 
   RS.GoogleDrive = function (remoteStorage, clientId) {
 
-    RS.eventHandling(this, 'change', 'connected', 'wire-busy', 'wire-done', 'not-connected');
+    RS.eventHandling(this, 'change', 'connecting', 'connected', 'wire-busy', 'wire-done', 'not-connected');
 
     this.rs = remoteStorage;
     this.clientId = clientId;
+
+    // reconnect at startup with settings
+    var settings;
+    try {
+      settings = JSON.parse(localStorage[SETTINGS_KEY]);
+    } catch(e){}
+    if (settings) {
+      this.configure(settings);
+    }
 
     this._fileIdCache = new Cache(60 * 5); // ids expire after 5 minutes (is this a good idea?)
   };
@@ -11951,19 +11979,32 @@ Math.uuid = function (len, radix) {
 
     configure: function (settings) { // Settings parameter compatible with WireClient
       if (settings.token) {
-        localStorage['remotestorage:googledrive:token'] = settings.token;
+        localStorage[SETTINGS_KEY] = settings.token;
         this.token = settings.token;
         this.connected = true;
-        this._emit('connected');
+        this.userAddress = settings.userAddress;
+        if (!settings.userAddress) {
+          this.info().then(function(info){
+            console.log("[GoogleDrive] configure ", info)
+            this.userAddress = info.user.emailAddress;
+            localStorage[SETTINGS_KEY] = JSON.stringify( { token: this.token,
+                                                            userAddress: this.userAddress,
+                                                            account: info } );
+            this._emit('connected');
+          }.bind(this));
+        } else {
+          this._emit('connected');
+        }
       } else {
         this.connected = false;
         delete this.token;
-        delete localStorage['remotestorage:googledrive:token'];
+        delete localStorage[SETTINGS_KEY];
       }
     },
 
     connect: function () {
       this.rs.setBackend('googledrive');
+      this.rs._emit('connecting');
       RS.Authorize(AUTH_URL, AUTH_SCOPE, String(RS.Authorize.getLocation()), this.clientId);
     },
 
@@ -11971,6 +12012,18 @@ Math.uuid = function (len, radix) {
       if (!this.connected) {
         this._emit('not-connected');
       }
+    },
+
+    /**
+     * Method : info()
+     **/
+    info: function() {
+      var url = BASE_URL + '/drive/v2/about';
+      // requesting user info(mainly for userAdress)
+      return this._request('GET', url, {}).then(function(resp) {
+        var info = JSON.parse(resp.responseText);
+        return Promise.resolve(info);
+      });
     },
 
     get: function (path, options) {
@@ -12284,6 +12337,7 @@ Math.uuid = function (len, radix) {
       remoteStorage.remote = remoteStorage._origRemote;
       delete remoteStorage._origRemote;
     }
+    delete localStorage[SETTINGS_KEY];
   };
 
 })(this);
